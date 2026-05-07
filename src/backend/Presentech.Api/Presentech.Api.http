@@ -1,0 +1,6 @@
+@Presentech.Api_HostAddress = http://localhost:5137
+
+GET {{Presentech.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
