@@ -1,0 +1,70 @@
+# =========================
+# Entorno y Secretos
+# =========================
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# IDEs y Editores
+# =========================
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Frontend (Node.js / React / Vue / Angular)
+# =========================
+src/frontend/node_modules/
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+dist/
+build/
+.next/
+out/
+coverage/
+.nuxt/
+.vuepress/dist
+
+# =========================
+# Backend & Tests (.NET / C#)
+# =========================
+[Bb]in/
+[Oo]bj/
+*.userprefs
+# Archivos de caché de NuGet
+*.nupkg
+# Archivos autogenerados de test
+TestResults/
+*.coverage
+*.coveragexml
+# Archivos temporales de compilación
+*.log
+# Opciones de usuario locales
+*.local
+
+# =========================
+# SO / Archivos de sistema
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
