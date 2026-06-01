@@ -101,6 +101,11 @@ export async function asignarParaleloEstudiante(idEstudiante, idParalelo) {
   return response.data
 }
 
+export async function desasignarParaleloEstudiante(idEstudiante, idParalelo) {
+  const response = await api.delete(`/admin/estudiantes/${idEstudiante}/paralelos/${idParalelo}`)
+  return response.data
+}
+
 // ── Materias ──────────────────────────────────────────────────────────────────
 export async function obtenerMaterias() {
   const response = await api.get('/admin/materias')

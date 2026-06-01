@@ -71,6 +71,7 @@ export function AdminLoginPage() {
             <Input
               label="Correo institucional"
               type="email"
+              placeholder="admin@institucion.edu.ec"
               value={credentials.correo_institucional}
               onChange={(value) =>
                 setCredentials((current) => ({
@@ -83,6 +84,7 @@ export function AdminLoginPage() {
             <Input
               label="Contraseña"
               type="password"
+              placeholder="Ingresa tu contraseña"
               value={credentials.contrasena}
               onChange={(value) =>
                 setCredentials((current) => ({

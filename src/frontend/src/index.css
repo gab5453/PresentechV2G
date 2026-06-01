@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import "@fortawesome/fontawesome-free/css/all.min.css";
 :root {
   --background: #fcfcfd;
   --foreground: #171717;
@@ -108,4 +108,34 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+/* Modern Placeholders */
+::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+input:focus::placeholder, textarea:focus::placeholder {
+  opacity: 0.3;
+}
+
+/* Focus and Glows */
+input, textarea, select {
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.15); /* Primary color glow */
+  border-color: var(--primary);
+}
+
+/* Base button animations */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+button:active {
+  transform: scale(0.97);
 }

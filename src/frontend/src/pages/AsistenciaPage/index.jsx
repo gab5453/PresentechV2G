@@ -1,4 +1,3 @@
-import { ChevronLeft } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AsistenciaForm } from '../../components/asistencias'
@@ -36,6 +35,7 @@ export function AsistenciaPage() {
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState('')
 
   const resumen = useMemo(() => calculateResumen(asistencias), [asistencias])
 
@@ -63,6 +63,7 @@ export function AsistenciaPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setSaveError('')
+    setSaveSuccess('')
 
     if (validateForm()) {
       setShowConfirm(true)
@@ -72,6 +73,7 @@ export function AsistenciaPage() {
   const saveAttendance = async () => {
     setIsSaving(true)
     setSaveError('')
+    setSaveSuccess('')
 
     const payload = {
       asistencias,
@@ -83,12 +85,16 @@ export function AsistenciaPage() {
     try {
       if (isEditing) {
         await actualizarAsistencia(registroExistente.id_registro, payload)
+        setSaveSuccess('Asistencia actualizada con éxito.')
       } else {
         await registrarAsistencia(payload)
+        setSaveSuccess('Asistencia registrada con éxito.')
       }
 
       setShowConfirm(false)
-      navigate('/clases')
+      setTimeout(() => {
+        navigate('/clases')
+      }, 2000)
     } catch (requestError) {
       setSaveError(getApiErrorMessage(requestError))
     } finally {
@@ -102,7 +108,7 @@ export function AsistenciaPage() {
         <div className="mb-6">
           <Button asChild className="mb-3 -ml-2 min-h-9 px-2" variant="ghost">
             <Link to="/clases">
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              <i className="fa-solid fa-chevron-left h-4 w-4 mr-1 flex items-center"></i>
               Volver
             </Link>
           </Button>
@@ -130,6 +136,13 @@ export function AsistenciaPage() {
         {error || saveError ? (
           <p className="mb-4 rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
             {error || saveError}
+          </p>
+        ) : null}
+
+        {saveSuccess ? (
+          <p className="mb-4 rounded-md border border-success bg-success-bg px-3 py-2 text-sm text-success font-medium">
+            <i className="fa-solid fa-circle-check mr-2"></i>
+            {saveSuccess}
           </p>
         ) : null}
 

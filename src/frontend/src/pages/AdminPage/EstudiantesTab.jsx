@@ -1,10 +1,9 @@
-import { Plus, Trash2, Link as LinkIcon, RefreshCw, Upload, FileSpreadsheet, Camera } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Input, Modal, Spinner, SearchableSelect } from '../../components/common'
 import { ImportarExcelButton } from '../../components/estudiantes/ImportarExcelButton'
 import { EscanearListaButton } from '../../components/estudiantes/EscanearListaButton'
 import { getApiData, getApiErrorMessage } from '../../services/api'
-import { obtenerEstudiantes, crearEstudiante, asignarParaleloEstudiante, obtenerParalelos } from '../../services/adminService'
+import { obtenerEstudiantes, crearEstudiante, asignarParaleloEstudiante, desasignarParaleloEstudiante, obtenerParalelos } from '../../services/adminService'
 
 export function EstudiantesTab() {
   const [estudiantes, setEstudiantes] = useState([])
@@ -81,13 +80,39 @@ export function EstudiantesTab() {
     }
   }
 
+  const handleDesasignarParalelo = async (idParalelo) => {
+    if (!estudianteSeleccionado) return
+    setIsAssigning(true)
+    setError('')
+    try {
+      await desasignarParaleloEstudiante(estudianteSeleccionado.id_estudiante, parseInt(idParalelo, 10))
+      // Update local state before refreshing
+      setEstudianteSeleccionado({
+        ...estudianteSeleccionado,
+        id_paralelos: estudianteSeleccionado.id_paralelos.filter(p => p !== idParalelo)
+      })
+      loadData()
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError))
+    } finally {
+      setIsAssigning(false)
+    }
+  }
+
   const openAsignarModal = (estudiante) => {
     setEstudianteSeleccionado(estudiante)
     setParaleloIdSeleccionado('')
     setIsAsignarModalOpen(true)
   }
 
-  const paraleloOptions = paralelos.map((p) => ({
+  const getParaleloNombre = (id) => {
+    const p = paralelos.find((par) => par.id_paralelo === id)
+    return p ? p.nombre : `Paralelo ${id}`
+  }
+
+  const paraleloOptions = paralelos
+    .filter((p) => !estudianteSeleccionado?.id_paralelos?.includes(p.id_paralelo))
+    .map((p) => ({
     value: p.id_paralelo.toString(),
     label: p.nombre
   }))
@@ -101,15 +126,15 @@ export function EstudiantesTab() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => setIsImportModalOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
+            <i className="fa-solid fa-upload mr-2"></i>
             Importar
           </Button>
           <Button onClick={() => setIsCrearModalOpen(true)}>
-            <Plus className="h-4 w-4" />
+            <i className="fa-solid fa-plus mr-2"></i>
             Crear estudiante
           </Button>
           <Button variant="outline" onClick={loadData} isLoading={isLoading}>
-            <RefreshCw className="h-4 w-4" />
+            <i className="fa-solid fa-rotate-right"></i>
           </Button>
         </div>
       </div>
@@ -132,6 +157,7 @@ export function EstudiantesTab() {
               <tr>
                 <th className="px-4 py-3 font-medium">Nombres</th>
                 <th className="px-4 py-3 font-medium">Apellidos</th>
+                <th className="px-4 py-3 font-medium">Paralelos</th>
                 <th className="px-4 py-3 font-medium text-right">Acciones</th>
               </tr>
             </thead>
@@ -141,6 +167,19 @@ export function EstudiantesTab() {
                   <tr key={estudiante.id_estudiante} className="hover:bg-muted/50">
                     <td className="px-4 py-3 text-foreground">{estudiante.nombres}</td>
                     <td className="px-4 py-3 text-foreground">{estudiante.apellidos}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {estudiante.id_paralelos && estudiante.id_paralelos.length > 0 ? (
+                          estudiante.id_paralelos.map((pid) => (
+                            <span key={pid} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                              {getParaleloNombre(pid)}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground text-xs italic">Ninguno</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <Button
                         variant="ghost"
@@ -148,7 +187,7 @@ export function EstudiantesTab() {
                         className="h-8 px-2 text-muted-foreground hover:text-primary"
                         onClick={() => openAsignarModal(estudiante)}
                       >
-                        <LinkIcon className="h-4 w-4 mr-1" /> Asignar a Paralelo
+                        <i className="fa-solid fa-pen-to-square mr-1"></i> Editar Paralelos
                       </Button>
                     </td>
                   </tr>
@@ -195,19 +234,45 @@ export function EstudiantesTab() {
       <Modal
         isOpen={isAsignarModalOpen}
         onClose={() => setIsAsignarModalOpen(false)}
-        title="Asignar paralelo"
-        confirmLabel="Asignar"
+        title="Editar paralelos"
+        confirmLabel="Asignar Nuevo"
         onConfirm={handleAsignarParalelo}
         isSubmitting={isAssigning}
       >
         <div className="space-y-4">
           {estudianteSeleccionado && (
-            <p className="text-sm text-foreground">
-              Seleccione el paralelo para asignar al estudiante <strong>{estudianteSeleccionado.nombres} {estudianteSeleccionado.apellidos}</strong>.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-foreground">
+                Estudiante: <strong>{estudianteSeleccionado.nombres} {estudianteSeleccionado.apellidos}</strong>
+              </p>
+              
+              <div className="pt-2">
+                <label className="text-sm font-medium text-foreground">Paralelos Actuales</label>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {estudianteSeleccionado.id_paralelos && estudianteSeleccionado.id_paralelos.length > 0 ? (
+                    estudianteSeleccionado.id_paralelos.map((pid) => (
+                      <span key={pid} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                        {getParaleloNombre(pid)}
+                        <button
+                          type="button"
+                          onClick={() => handleDesasignarParalelo(pid)}
+                          className="ml-1.5 inline-flex items-center justify-center text-secondary-foreground hover:text-destructive focus:outline-none"
+                          disabled={isAssigning}
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">No tiene paralelos asignados.</span>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Paralelo</label>
+          
+          <div className="pt-4 border-t border-border space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Añadir a nuevo paralelo</label>
             <SearchableSelect
               options={paraleloOptions}
               value={paraleloIdSeleccionado}
@@ -237,7 +302,7 @@ export function EstudiantesTab() {
                 loadData()
               }} 
             >
-              <FileSpreadsheet className="h-5 w-5 mr-2" />
+              <i className="fa-solid fa-file-excel mr-2"></i>
               Importar Excel
             </ImportarExcelButton>
             <span className="text-sm text-muted-foreground font-medium">o</span>
@@ -247,7 +312,7 @@ export function EstudiantesTab() {
                 loadData()
               }}
             >
-              <Camera className="h-5 w-5 mr-2" />
+              <i className="fa-solid fa-camera mr-2"></i>
               Escanear
             </EscanearListaButton>
           </div>

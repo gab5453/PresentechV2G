@@ -11,12 +11,12 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState('profesores')
 
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'profesores', label: 'Profesores' },
-    { id: 'paralelos', label: 'Paralelos' },
-    { id: 'materias', label: 'Materias' },
-    { id: 'clases', label: 'Clases y Horarios' },
-    { id: 'estudiantes', label: 'Estudiantes' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-chart-line' },
+    { id: 'profesores', label: 'Profesores', icon: 'fa-solid fa-chalkboard-user' },
+    { id: 'paralelos', label: 'Paralelos', icon: 'fa-solid fa-users-rectangle' },
+    { id: 'materias', label: 'Materias', icon: 'fa-solid fa-book' },
+    { id: 'clases', label: 'Clases y Horarios', icon: 'fa-solid fa-calendar-days' },
+    { id: 'estudiantes', label: 'Estudiantes', icon: 'fa-solid fa-user-graduate' },
   ]
 
   return (
@@ -35,12 +35,13 @@ export function AdminPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 rounded-lg py-2.5 px-4 text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 flex items-center justify-center rounded-lg py-2.5 px-4 text-sm font-semibold transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-primary to-primary-dark text-primary-foreground shadow-md'
                   : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               }`}
             >
+              <i className={`${tab.icon} mr-2`}></i>
               {tab.label}
             </button>
           ))}

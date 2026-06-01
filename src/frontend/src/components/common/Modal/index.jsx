@@ -21,13 +21,13 @@ export function Modal({
     >
       <section
         aria-modal="true"
-        className="w-full max-w-md max-h-[calc(100svh-6rem)] overflow-y-auto rounded-xl border border-border/50 bg-card/90 backdrop-blur-md p-6 text-left shadow-2xl sm:max-h-[calc(100svh-2rem)] animate-slide-up"
+        className="w-full max-w-md min-h-[70vh] sm:min-h-0 max-h-[calc(100svh-6rem)] overflow-y-auto rounded-xl border border-border/50 bg-card/90 backdrop-blur-md p-6 text-left shadow-2xl sm:max-h-[calc(100svh-2rem)] animate-slide-up flex flex-col"
         role="dialog"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <h2 className="text-xl font-semibold text-foreground tracking-tight">{title}</h2>
-        <div className="mt-3 text-base leading-6 text-muted-foreground">{children}</div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 text-base leading-6 text-muted-foreground flex-1 flex flex-col">{children}</div>
+        <div className="mt-auto pt-5 grid gap-3 sm:grid-cols-2">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             {cancelLabel}
           </Button>
