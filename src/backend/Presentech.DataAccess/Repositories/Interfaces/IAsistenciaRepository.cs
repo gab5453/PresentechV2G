@@ -9,6 +9,7 @@ namespace Presentech.DataAccess.Repositories.Interfaces
         // =========================
         Task<IReadOnlyList<AsistenciaEntity>> ObtenerPorRegistroAsync(int id_registro, CancellationToken cancellationToken = default);
         Task<AsistenciaEntity?> ObtenerPorIdAsync(int id_asistencia, CancellationToken cancellationToken = default);
+        IQueryable<AsistenciaEntity> GetAll();
 
         // =========================
         // COMANDOS

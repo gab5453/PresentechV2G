@@ -184,4 +184,32 @@ public class AdminController : AdminBaseController
         await _adminService.EliminarHorarioAsync(id, idHorario, cancellationToken);
         return Ok(ApiResponse<string>.Ok("OK", "Horario eliminado exitosamente."));
     }
+    // --------------------------------------------------------------------------
+    // ESTUDIANTES
+    // --------------------------------------------------------------------------
+
+    [HttpGet("estudiantes")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<EstudianteAdminResponse>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ObtenerEstudiantes(CancellationToken cancellationToken)
+    {
+        var result = await _adminService.ObtenerEstudiantesAsync(cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<EstudianteAdminResponse>>.Ok(result, "Consulta exitosa."));
+    }
+
+    [HttpPost("estudiantes")]
+    [ProducesResponseType(typeof(ApiResponse<EstudianteAdminResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CrearEstudiante([FromBody] CrearEstudianteRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _adminService.CrearEstudianteAsync(request, cancellationToken);
+        return Ok(ApiResponse<EstudianteAdminResponse>.Ok(result, "Estudiante creado exitosamente."));
+    }
+
+    [HttpPost("estudiantes/{id:int}/paralelos/{idParalelo:int}")]
+    [ProducesResponseType(typeof(ApiResponse<EstudianteAdminResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AsignarParalelo(int id, int idParalelo, CancellationToken cancellationToken)
+    {
+        var result = await _adminService.AsignarParaleloAsync(id, idParalelo, cancellationToken);
+        return Ok(ApiResponse<EstudianteAdminResponse>.Ok(result, "Estudiante asignado al paralelo exitosamente."));
+    }
 }

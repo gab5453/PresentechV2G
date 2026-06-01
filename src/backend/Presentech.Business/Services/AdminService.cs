@@ -19,6 +19,8 @@ namespace Presentech.Business.Services
         private readonly IParaleloDataService      _paraleloDataService;
         private readonly IClaseDataService         _claseDataService;
         private readonly IClaseHorarioDataService  _claseHorarioDataService;
+        private readonly IEstudianteDataService    _estudianteDataService;
+        private readonly IEstudianteService        _estudianteService;
         private readonly JwtSettings               _jwtSettings;
 
         public AdminService(
@@ -27,6 +29,8 @@ namespace Presentech.Business.Services
             IParaleloDataService      paraleloDataService,
             IClaseDataService         claseDataService,
             IClaseHorarioDataService  claseHorarioDataService,
+            IEstudianteDataService    estudianteDataService,
+            IEstudianteService        estudianteService,
             JwtSettings               jwtSettings)
         {
             _administradorDataService = administradorDataService;
@@ -34,6 +38,8 @@ namespace Presentech.Business.Services
             _paraleloDataService      = paraleloDataService;
             _claseDataService         = claseDataService;
             _claseHorarioDataService  = claseHorarioDataService;
+            _estudianteDataService    = estudianteDataService;
+            _estudianteService        = estudianteService;
             _jwtSettings              = jwtSettings;
         }
 
@@ -287,6 +293,63 @@ namespace Presentech.Business.Services
                 throw new UnauthorizedBusinessException("El horario no pertenece a la clase indicada.");
 
             await _claseHorarioDataService.EliminarAsync(id_horario, cancellationToken);
+        }
+
+        // =========================
+        // ESTUDIANTES
+        // =========================
+        public async Task<IReadOnlyList<EstudianteAdminResponse>> ObtenerEstudiantesAsync(CancellationToken cancellationToken = default)
+        {
+            var estudiantes = await _estudianteDataService.ObtenerTodosAsync(cancellationToken);
+            return estudiantes.Select(e => new EstudianteAdminResponse
+            {
+                id_estudiante = e.id_estudiante,
+                nombres       = e.nombres,
+                apellidos     = e.apellidos,
+                activo        = e.activo,
+            }).ToList();
+        }
+
+        public async Task<EstudianteAdminResponse> CrearEstudianteAsync(CrearEstudianteRequest request, CancellationToken cancellationToken = default)
+        {
+            var model = new EstudianteDataModel
+            {
+                nombres   = request.nombres,
+                apellidos = request.apellidos,
+                activo    = true,
+            };
+            var created = await _estudianteDataService.CrearAsync(model, cancellationToken);
+            return new EstudianteAdminResponse
+            {
+                id_estudiante = created.id_estudiante,
+                nombres       = created.nombres,
+                apellidos     = created.apellidos,
+                activo        = created.activo,
+            };
+        }
+
+        public async Task<EstudianteAdminResponse> AsignarParaleloAsync(int id_estudiante, int id_paralelo, CancellationToken cancellationToken = default)
+        {
+            _ = await _estudianteDataService.ObtenerPorIdAsync(id_estudiante, cancellationToken)
+                ?? throw new NotFoundException("Estudiante", id_estudiante);
+            _ = await _paraleloDataService.ObtenerPorIdAsync(id_paralelo, cancellationToken)
+                ?? throw new NotFoundException("Paralelo", id_paralelo);
+                
+            await _estudianteDataService.MatricularAsync(id_estudiante, id_paralelo, cancellationToken);
+            
+            var estudiante = await _estudianteDataService.ObtenerPorIdAsync(id_estudiante, cancellationToken);
+            return new EstudianteAdminResponse
+            {
+                id_estudiante = estudiante!.id_estudiante,
+                nombres       = estudiante.nombres,
+                apellidos     = estudiante.apellidos,
+                activo        = estudiante.activo,
+            };
+        }
+
+        public async Task ImportarEstudiantesExcelAsync(int id_paralelo, Presentech.Business.DTOs.Estudiante.ImportarEstudiantesRequest request, CancellationToken cancellationToken = default)
+        {
+            await _estudianteService.ImportarAsync(id_paralelo, request, cancellationToken);
         }
 
         // =========================

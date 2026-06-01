@@ -1,0 +1,9 @@
+using Presentech.Business.DTOs.Dashboard;
+
+namespace Presentech.Business.Interfaces
+{
+    public interface IDashboardService
+    {
+        Task<DashboardResponse> GetDashboardStatsAsync(int? idProfesor, CancellationToken cancellationToken = default);
+    }
+}

@@ -29,6 +29,13 @@ namespace Presentech.DataManagement.Services
             return entity is null ? null : EstudianteDataMapper.ToDataModel(entity);
         }
 
+        public async Task<IReadOnlyList<EstudianteDataModel>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
+        {
+            var query = _unitOfWork.EstudianteRepository.GetAll();
+            var entities = query.ToList(); // Note: Ideally we await EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync but IReadOnlyList is needed. We can just use ToList for now, it's small list.
+            return entities.Select(EstudianteDataMapper.ToDataModel).ToList();
+        }
+
         // =========================
         // COMANDOS
         // =========================
@@ -38,6 +45,18 @@ namespace Presentech.DataManagement.Services
             await _unitOfWork.EstudianteRepository.AgregarAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return EstudianteDataMapper.ToDataModel(entity);
+        }
+
+        public async Task MatricularAsync(int id_estudiante, int id_paralelo, CancellationToken cancellationToken = default)
+        {
+            var matricula = new ParaleloEstudianteEntity
+            {
+                id_paralelo   = id_paralelo,
+                id_estudiante = id_estudiante,
+                activo        = true,
+            };
+            await _unitOfWork.EstudianteRepository.MatricularRangoAsync(new[] { matricula }, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         // =========================

@@ -101,4 +101,21 @@ namespace Presentech.Business.DTOs.Admin
         public string hora_inicio { get; set; } = string.Empty;
         public string hora_fin { get; set; } = string.Empty;
     }
+
+
+    // -- Estudiantes --------------------------------------------------------------
+    public class EstudianteAdminResponse
+    {
+        public int id_estudiante { get; set; }
+        public string nombres { get; set; } = string.Empty;
+        public string apellidos { get; set; } = string.Empty;
+        public bool activo { get; set; }
+        public List<int> id_paralelos { get; set; } = new();
+    }
+
+    public class CrearEstudianteRequest
+    {
+        public string nombres { get; set; } = string.Empty;
+        public string apellidos { get; set; } = string.Empty;
+    }
 }

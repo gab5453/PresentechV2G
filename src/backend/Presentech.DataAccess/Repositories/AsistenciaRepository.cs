@@ -35,6 +35,11 @@ namespace Presentech.DataAccess.Repositories
                 .FirstOrDefaultAsync(a => a.id_asistencia == id_asistencia, cancellationToken);
         }
 
+        public IQueryable<AsistenciaEntity> GetAll()
+        {
+            return _context.Asistencias.AsNoTracking();
+        }
+
         // =========================
         // COMANDOS
         // =========================

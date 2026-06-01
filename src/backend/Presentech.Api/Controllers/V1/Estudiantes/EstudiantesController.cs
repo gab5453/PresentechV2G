@@ -11,7 +11,7 @@ namespace Presentech.Api.Controllers.V1.Estudiantes;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/estudiantes")]
-[Authorize]
+[Authorize(Roles = "admin")]
 public class EstudiantesController : PresentechBaseController
 {
     private readonly IEstudianteService _estudianteService;

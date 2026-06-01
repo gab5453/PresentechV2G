@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IClaseService, ClaseService>();
         services.AddScoped<IAsistenciaService, AsistenciaService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IEstudianteService, EstudianteService>();
         services.AddScoped<IAdminService, AdminService>();
 

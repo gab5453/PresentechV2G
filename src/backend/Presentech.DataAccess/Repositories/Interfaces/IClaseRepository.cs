@@ -11,6 +11,7 @@ namespace Presentech.DataAccess.Repositories.Interfaces
         Task<IReadOnlyList<ClaseEntity>> ObtenerPorProfesorAsync(int id_profesor, CancellationToken cancellationToken = default);
         Task<ClaseEntity?> ObtenerPorIdAsync(int id_clase, CancellationToken cancellationToken = default);
         Task<ClaseEntity?> ObtenerConHorarioAsync(int id_clase, CancellationToken cancellationToken = default);
+        IQueryable<ClaseEntity> GetAll();
 
         // =========================
         // COMANDOS

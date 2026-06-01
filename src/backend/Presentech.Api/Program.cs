@@ -3,6 +3,8 @@ using Presentech.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 builder.Services.AddControllers();
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddCustomAuthentication(builder.Configuration);

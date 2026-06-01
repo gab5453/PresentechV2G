@@ -34,6 +34,11 @@ namespace Presentech.DataAccess.Repositories
                 .FirstOrDefaultAsync(e => e.id_estudiante == id_estudiante && e.activo, cancellationToken);
         }
 
+        public IQueryable<EstudianteEntity> GetAll()
+        {
+            return _context.Estudiantes.AsNoTracking();
+        }
+
         // =========================
         // COMANDOS
         // =========================

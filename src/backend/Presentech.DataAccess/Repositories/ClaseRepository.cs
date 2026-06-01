@@ -52,11 +52,16 @@ namespace Presentech.DataAccess.Repositories
         public async Task<ClaseEntity?> ObtenerConHorarioAsync(int id_clase, CancellationToken cancellationToken = default)
         {
             return await _context.Clases
-                .AsNoTracking()
                 .Include(c => c.Paralelo)
                 .Include(c => c.ClasesHorario)
                     .ThenInclude(ch => ch.DiaSemana)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.id_clase == id_clase && c.activo, cancellationToken);
+        }
+
+        public IQueryable<ClaseEntity> GetAll()
+        {
+            return _context.Clases.AsNoTracking();
         }
 
         // =========================
