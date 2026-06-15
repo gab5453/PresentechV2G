@@ -21,6 +21,7 @@ namespace Presentech.DataManagement.Services
         private IClaseHorarioRepository?       _claseHorarioRepository;
         private IRegistroAsistenciaRepository? _registroAsistenciaRepository;
         private IAsistenciaRepository?         _asistenciaRepository;
+        private IOpinionRecomendacionRepository? _opinionRecomendacionRepository;
 
         public UnitOfWork(PresentechDbContext context)
         {
@@ -56,6 +57,9 @@ namespace Presentech.DataManagement.Services
 
         public IAsistenciaRepository AsistenciaRepository =>
             _asistenciaRepository ??= new AsistenciaRepository(_context);
+
+        public IOpinionRecomendacionRepository OpinionRecomendacionRepository =>
+            _opinionRecomendacionRepository ??= new OpinionRecomendacionRepository(_context);
 
         // =========================
         // SAVE CHANGES

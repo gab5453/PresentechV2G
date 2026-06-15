@@ -1,0 +1,1 @@
+export { OpinionesView } from './OpinionesView'

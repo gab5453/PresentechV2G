@@ -25,6 +25,7 @@ namespace Presentech.DataAccess.Context
         public DbSet<ClaseHorarioEntity> ClasesHorario => Set<ClaseHorarioEntity>();
         public DbSet<RegistroAsistenciaEntity> RegistrosAsistencia => Set<RegistroAsistenciaEntity>();
         public DbSet<AsistenciaEntity> Asistencias => Set<AsistenciaEntity>();
+        public DbSet<OpinionRecomendacionEntity> OpinionesRecomendaciones => Set<OpinionRecomendacionEntity>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,7 @@ namespace Presentech.DataAccess.Context
             modelBuilder.ApplyConfiguration(new ClaseHorarioConfiguration());
             modelBuilder.ApplyConfiguration(new RegistroAsistenciaConfiguration());
             modelBuilder.ApplyConfiguration(new AsistenciaConfiguration());
+            modelBuilder.ApplyConfiguration(new OpinionRecomendacionConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }

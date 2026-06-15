@@ -7,6 +7,7 @@ import { getApiData, getApiErrorMessage } from '../../services/api'
 import { obtenerMisClases } from '../../services/clasesService'
 import { DashboardView } from '../../components/dashboard'
 import { ReportesView } from '../../components/reportes'
+import { OpinionesView } from '../../components/opiniones'
 
 export function ClasesPage() {
   const [clases, setClases] = useState([])
@@ -18,6 +19,7 @@ export function ClasesPage() {
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'clases', label: 'Mis Clases' },
     { id: 'reportes', label: 'Reportes' },
+    { id: 'opiniones', label: 'Opiniones y Recomendaciones' },
   ]
 
   const loadClases = useCallback(async () => {
@@ -101,6 +103,7 @@ export function ClasesPage() {
         <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-md p-4 md:p-6 shadow-xl animate-fade-in">
           {activeTab === 'dashboard' && <DashboardView role="profesor" />}
           {activeTab === 'reportes' && <ReportesView />}
+          {activeTab === 'opiniones' && <OpinionesView />}
           
           {activeTab === 'clases' && (
             <>

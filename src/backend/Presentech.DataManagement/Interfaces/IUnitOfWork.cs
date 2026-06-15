@@ -16,6 +16,7 @@ namespace Presentech.DataManagement.Interfaces
         IClaseHorarioRepository ClaseHorarioRepository { get; }
         IRegistroAsistenciaRepository RegistroAsistenciaRepository { get; }
         IAsistenciaRepository AsistenciaRepository { get; }
+        IOpinionRecomendacionRepository OpinionRecomendacionRepository { get; }
 
         // =========================
         // SAVE CHANGES

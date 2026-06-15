@@ -35,5 +35,6 @@ namespace Presentech.DataAccess.Entities
         // NAVEGACIÓN
         // =========================
         public ICollection<ClaseEntity> Clases { get; set; } = new List<ClaseEntity>();
+        public ICollection<OpinionRecomendacionEntity> OpinionesRecomendaciones { get; set; } = new List<OpinionRecomendacionEntity>();
     }
 }
