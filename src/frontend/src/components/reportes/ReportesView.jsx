@@ -17,15 +17,42 @@ import {
 import { generarReporteAsistencia } from '../../services/reportesService'
 import { ReportPreviewModal } from './ReportPreviewModal'
 
-const currentYear = new Date().getFullYear()
-const today = new Date().toISOString().slice(0, 10)
+const today = new Date()
+
+function formatIsoDate(year, month, day) {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+function getActiveSchoolYear(referenceDate) {
+  const currentYear = referenceDate.getFullYear()
+  const startYear = referenceDate.getMonth() >= 8 ? currentYear : currentYear - 1
+
+  return {
+    start: formatIsoDate(startYear, 9, 1),
+    end: formatIsoDate(startYear + 1, 6, 30),
+    startYear,
+    endYear: startYear + 1,
+  }
+}
+
+const schoolYear = getActiveSchoolYear(today)
+const todayIso = formatIsoDate(
+  today.getFullYear(),
+  today.getMonth() + 1,
+  today.getDate(),
+)
+const defaultEndDate =
+  todayIso < schoolYear.start
+    ? schoolYear.start
+    : todayIso > schoolYear.end
+      ? schoolYear.end
+      : todayIso
 
 const quarterOptions = [
   { value: '', label: 'Rango personalizado' },
   { value: '1', label: 'Primer trimestre' },
   { value: '2', label: 'Segundo trimestre' },
   { value: '3', label: 'Tercer trimestre' },
-  { value: '4', label: 'Cuarto trimestre' },
 ]
 
 const reportTypeOptions = [
@@ -34,17 +61,22 @@ const reportTypeOptions = [
 ]
 
 function getQuarterDates(quarter) {
-  const number = Number(quarter)
-  if (!number) return null
-
-  const startMonth = (number - 1) * 3
-  const start = new Date(currentYear, startMonth, 1)
-  const end = new Date(currentYear, startMonth + 3, 0)
-
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+  const periods = {
+    1: {
+      start: formatIsoDate(schoolYear.startYear, 9, 1),
+      end: formatIsoDate(schoolYear.startYear, 12, 31),
+    },
+    2: {
+      start: formatIsoDate(schoolYear.endYear, 1, 1),
+      end: formatIsoDate(schoolYear.endYear, 3, 31),
+    },
+    3: {
+      start: formatIsoDate(schoolYear.endYear, 4, 1),
+      end: formatIsoDate(schoolYear.endYear, 6, 30),
+    },
   }
+
+  return periods[quarter] ?? null
 }
 
 function getStatusClasses(status) {
@@ -57,8 +89,8 @@ export function ReportesView() {
   const [classes, setClasses] = useState([])
   const [students, setStudents] = useState([])
   const [filters, setFilters] = useState({
-    startDate: `${currentYear}-01-01`,
-    endDate: today,
+    startDate: schoolYear.start,
+    endDate: defaultEndDate,
     quarter: '',
     classId: '',
     studentId: '',
@@ -173,6 +205,12 @@ export function ReportesView() {
     if (filters.startDate > filters.endDate) {
       return 'La fecha de inicio no puede ser posterior a la fecha de fin.'
     }
+    if (
+      filters.startDate < schoolYear.start ||
+      filters.endDate > schoolYear.end
+    ) {
+      return `Las fechas deben estar dentro del año lectivo ${schoolYear.startYear}-${schoolYear.endYear}.`
+    }
     if (filters.reportType === 'individual' && !filters.studentId) {
       return 'Seleccione un estudiante para el reporte individual.'
     }
@@ -257,7 +295,12 @@ export function ReportesView() {
       <section className="rounded-xl border border-border/50 bg-card/70 p-4 shadow-sm md:p-5">
         <div className="mb-4 flex items-center gap-2">
           <Filter className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-foreground">Filtros del reporte</h3>
+          <div>
+            <h3 className="font-semibold text-foreground">Filtros del reporte</h3>
+            <p className="text-xs text-muted-foreground">
+              Año lectivo {schoolYear.startYear}-{schoolYear.endYear}: 1 de septiembre al 30 de junio.
+            </p>
+          </div>
         </div>
 
         {isLoadingOptions ? (
@@ -273,15 +316,21 @@ export function ReportesView() {
               onChange={handleQuarterChange}
             />
             <Input
+              className="disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+              disabled={Boolean(filters.quarter)}
               label="Fecha inicio"
-              max={filters.endDate}
+              max={filters.endDate < schoolYear.end ? filters.endDate : schoolYear.end}
+              min={schoolYear.start}
               type="date"
               value={filters.startDate}
               onChange={(value) => updateFilter('startDate', value)}
             />
             <Input
+              className="disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+              disabled={Boolean(filters.quarter)}
               label="Fecha fin"
-              min={filters.startDate}
+              max={schoolYear.end}
+              min={filters.startDate > schoolYear.start ? filters.startDate : schoolYear.start}
               type="date"
               value={filters.endDate}
               onChange={(value) => updateFilter('endDate', value)}
