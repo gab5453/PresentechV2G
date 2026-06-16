@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button, Input } from '../../components/common'
+import { Footer } from '../../components/layout'
 import { getApiErrorMessage } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -36,7 +37,8 @@ export function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-gradient-to-br from-secondary via-background to-primary/10 relative overflow-hidden">
+    <div className="flex min-h-svh flex-col bg-gradient-to-br from-secondary via-background to-primary/10">
+    <main className="relative flex flex-1 items-center justify-center overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float" />
       <div className="absolute top-40 -right-32 w-96 h-96 bg-secondary-foreground/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float" style={{ animationDelay: '2s' }} />
@@ -112,5 +114,7 @@ export function AdminLoginPage() {
         </p>
       </section>
     </main>
+    <Footer />
+    </div>
   )
 }
