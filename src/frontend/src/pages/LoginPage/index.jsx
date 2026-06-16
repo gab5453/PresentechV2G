@@ -47,9 +47,11 @@ export function LoginPage() {
 
       <section className="relative z-10 w-full max-w-md px-4 py-8 animate-fade-in animate-slide-up flex flex-col items-center">
         <div className="mb-8 flex flex-col items-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-dark shadow-xl">
-            <span className="text-3xl font-bold text-primary-foreground tracking-tight">PT</span>
-          </div>
+          <img
+            alt="Logo PresenTech"
+            className="mb-6 h-20 w-20 rounded-2xl object-cover shadow-xl"
+            src="/logo_presentech_icon.png"
+          />
           <h1 className="text-3xl font-bold text-foreground tracking-tight">PresenTech</h1>
           <p className="mt-2 text-center text-base text-muted-foreground">
             Sistema de gestión de asistencia docente

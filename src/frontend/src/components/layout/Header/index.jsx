@@ -9,9 +9,11 @@ export function Header({ title, user, onLogout }) {
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex shrink-0 items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-br from-primary to-primary-dark shadow-md">
-              <span className="text-sm font-medium text-primary-foreground">PT</span>
-            </div>
+            <img
+              alt="Logo PresenTech"
+              className="h-8 w-8 rounded object-cover shadow-md"
+              src="/logo_presentech_icon.png"
+            />
             <span className="hidden font-medium text-foreground tracking-tight min-[390px]:inline">
               PresenTech
             </span>
