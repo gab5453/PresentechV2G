@@ -13,6 +13,9 @@ const videoConstraints = {
   facingMode: 'environment',
 }
 
+const OCR_MAX_IMAGE_SIDE = 2600
+const OCR_IMAGE_QUALITY = 0.88
+
 function dataUrlToFile(dataUrl, fileName) {
   const [metadata, base64] = dataUrl.split(',')
   const contentType = metadata.match(/data:(.*);base64/)?.[1] ?? 'image/jpeg'
@@ -32,6 +35,56 @@ function readFileAsDataUrl(file) {
     reader.onload = () => resolve(reader.result)
     reader.onerror = reject
     reader.readAsDataURL(file)
+  })
+}
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const image = new Image()
+
+    image.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve(image)
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('No se pudo leer la imagen.'))
+    }
+    image.src = url
+  })
+}
+
+async function prepareImageForOcr(file) {
+  const image = await loadImageFromFile(file)
+  const scale = Math.min(1, OCR_MAX_IMAGE_SIDE / Math.max(image.width, image.height))
+  const width = Math.round(image.width * scale)
+  const height = Math.round(image.height * scale)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+
+  const context = canvas.getContext('2d')
+  context.drawImage(image, 0, 0, width, height)
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('No se pudo preparar la imagen para OCR.'))
+          return
+        }
+
+        resolve(
+          new File([blob], file.name.replace(/\.[^.]+$/, '') + '-ocr.jpg', {
+            type: 'image/jpeg',
+          }),
+        )
+      },
+      'image/jpeg',
+      OCR_IMAGE_QUALITY,
+    )
   })
 }
 
@@ -105,8 +158,8 @@ export function EscanearListaButton({ children, onImportSuccess }) {
       setCapturedFile(file)
       setImgSrc(preview)
       setShowInlineCamera(false)
-    } catch {
-      setError('No se pudo cargar la imagen seleccionada.')
+    } catch (loadError) {
+      setError(loadError.message || 'No se pudo cargar la imagen seleccionada.')
     }
   }
 
@@ -147,7 +200,8 @@ export function EscanearListaButton({ children, onImportSuccess }) {
     setDetectedText('')
 
     try {
-      const file = capturedFile ?? dataUrlToFile(imgSrc, `lista-estudiantes-${Date.now()}.jpg`)
+      const rawFile = capturedFile ?? dataUrlToFile(imgSrc, `lista-estudiantes-${Date.now()}.jpg`)
+      const file = await prepareImageForOcr(rawFile)
       const result = await extraerEstudiantesDesdeImagen(file)
       const students = result?.estudiantes ?? []
 
