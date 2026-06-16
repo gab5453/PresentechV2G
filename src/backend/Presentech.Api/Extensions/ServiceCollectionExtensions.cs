@@ -52,6 +52,26 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(jwtSettings);
 
         // =========================
+        // AZURE OCR SETTINGS
+        // =========================
+        var azureOcrOptions = new AzureOcrOptions
+        {
+            Endpoint = configuration["AzureOcr:Endpoint"]
+                ?? configuration["AZURE_OCR_ENDPOINT"]
+                ?? string.Empty,
+            Key = configuration["AzureOcr:Key"]
+                ?? configuration["AZURE_OCR_KEY"]
+                ?? string.Empty,
+            Model = configuration["AzureOcr:Model"]
+                ?? configuration["AZURE_OCR_MODEL"]
+                ?? "prebuilt-read",
+            ApiVersion = configuration["AzureOcr:ApiVersion"]
+                ?? configuration["AZURE_OCR_API_VERSION"]
+                ?? "2024-11-30",
+        };
+        services.AddSingleton(azureOcrOptions);
+
+        // =========================
         // BUSINESS
         // =========================
         services.AddScoped<IAuthService, AuthService>();
@@ -62,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IReporteService, ReporteService>();
         services.AddScoped<IOpinionService, OpinionService>();
+        services.AddHttpClient<IOcrService, OcrService>();
 
         return services;
     }
