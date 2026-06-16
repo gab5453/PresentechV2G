@@ -26,6 +26,15 @@ function dataUrlToFile(dataUrl, fileName) {
   return new File([bytes], fileName, { type: contentType })
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 function createReviewRows(students) {
   return students.map((student, index) => ({
     id: `${student.apellidos}-${student.nombres}-${index}`,
@@ -40,7 +49,9 @@ function createReviewRows(students) {
 export function EscanearListaButton({ children, onImportSuccess }) {
   const [isOpen, setIsOpen] = useState(false)
   const webcamRef = useRef(null)
+  const fileInputRef = useRef(null)
   const [imgSrc, setImgSrc] = useState(null)
+  const [capturedFile, setCapturedFile] = useState(null)
   const [error, setError] = useState('')
   const [warnings, setWarnings] = useState([])
   const [detectedText, setDetectedText] = useState('')
@@ -48,6 +59,7 @@ export function EscanearListaButton({ children, onImportSuccess }) {
   const [importSummary, setImportSummary] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [showInlineCamera, setShowInlineCamera] = useState(false)
 
   const hasResults = reviewRows.length > 0 || detectedText || warnings.length > 0
   const hasImportSummary = Boolean(importSummary)
@@ -68,21 +80,51 @@ export function EscanearListaButton({ children, onImportSuccess }) {
     setDetectedText('')
     setReviewRows([])
     setImportSummary(null)
+    setCapturedFile(dataUrlToFile(imageSrc, `lista-estudiantes-${Date.now()}.jpg`))
     setImgSrc(imageSrc)
   }, [])
 
+  const handleNativeFileChange = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('Seleccione una imagen valida para procesar con OCR.')
+      return
+    }
+
+    try {
+      const preview = await readFileAsDataUrl(file)
+      setError('')
+      setWarnings([])
+      setDetectedText('')
+      setReviewRows([])
+      setImportSummary(null)
+      setCapturedFile(file)
+      setImgSrc(preview)
+      setShowInlineCamera(false)
+    } catch {
+      setError('No se pudo cargar la imagen seleccionada.')
+    }
+  }
+
   const retake = () => {
     setImgSrc(null)
+    setCapturedFile(null)
     setError('')
     setWarnings([])
     setDetectedText('')
     setReviewRows([])
     setImportSummary(null)
+    setShowInlineCamera(false)
   }
 
   const closeModal = () => {
     setIsOpen(false)
     setImgSrc(null)
+    setCapturedFile(null)
     setError('')
     setWarnings([])
     setDetectedText('')
@@ -90,11 +132,12 @@ export function EscanearListaButton({ children, onImportSuccess }) {
     setImportSummary(null)
     setIsProcessing(false)
     setIsImporting(false)
+    setShowInlineCamera(false)
   }
 
   const handleProcessDocument = async () => {
-    if (!imgSrc) {
-      capture()
+    if (!imgSrc && !capturedFile) {
+      fileInputRef.current?.click()
       return
     }
 
@@ -104,7 +147,7 @@ export function EscanearListaButton({ children, onImportSuccess }) {
     setDetectedText('')
 
     try {
-      const file = dataUrlToFile(imgSrc, `lista-estudiantes-${Date.now()}.jpg`)
+      const file = capturedFile ?? dataUrlToFile(imgSrc, `lista-estudiantes-${Date.now()}.jpg`)
       const result = await extraerEstudiantesDesdeImagen(file)
       const students = result?.estudiantes ?? []
 
@@ -133,6 +176,10 @@ export function EscanearListaButton({ children, onImportSuccess }) {
 
   const removeRow = (id) => {
     setReviewRows((currentRows) => currentRows.filter((row) => row.id !== id))
+  }
+
+  const openNativeCamera = () => {
+    fileInputRef.current?.click()
   }
 
   const handleImportSelected = async () => {
@@ -202,17 +249,26 @@ export function EscanearListaButton({ children, onImportSuccess }) {
       ? 'Importar seleccionados'
       : imgSrc
         ? 'Extraer nombres'
-        : 'Cerrar'
+        : 'Abrir camara'
   const onConfirm = hasImportSummary
     ? closeModal
     : hasResults
       ? handleImportSelected
       : imgSrc
         ? handleProcessDocument
-        : closeModal
+        : openNativeCamera
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleNativeFileChange}
+      />
+
       <Button
         variant="primary"
         onClick={() => setIsOpen(true)}
@@ -263,42 +319,68 @@ export function EscanearListaButton({ children, onImportSuccess }) {
             </div>
           ) : null}
 
-          <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-foreground/90 p-3 shadow-inner sm:max-w-xl">
-            <div className="relative mx-auto aspect-[3/4] max-h-[58svh] w-full overflow-hidden rounded-xl bg-black sm:aspect-[4/3] sm:max-h-[60vh]">
-            {!imgSrc ? (
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                videoConstraints={videoConstraints}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <img
-                src={imgSrc}
-                alt="Documento capturado"
-                className="h-full w-full bg-black object-cover"
-              />
-            )}
-
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/20" />
-            <div className="pointer-events-none absolute inset-x-[14%] inset-y-[5%] rounded-xl border-[3px] border-dashed border-white/70 shadow-[0_0_0_999px_rgba(0,0,0,0.28)] sm:inset-x-[20%] sm:inset-y-[7%]">
-              <span className="absolute left-1/2 top-1/2 w-44 -translate-x-1/2 -translate-y-1/2 rounded bg-black/60 px-3 py-1 text-center text-xs text-white/90 backdrop-blur-sm">
-                Coloca la hoja dentro de este marco
-              </span>
-            </div>
-
-            {!imgSrc ? (
-              <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs text-white/85 backdrop-blur-sm">
-                Captura la hoja vertical, completa y enfocada.
+          {!imgSrc && !showInlineCamera ? (
+            <div className="w-full rounded-2xl border border-border/60 bg-muted/30 p-4 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Camera className="h-6 w-6" />
               </div>
-            ) : (
-              <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs text-white/85 backdrop-blur-sm">
-                Si la hoja no quedo dentro del marco, toma otra foto.
-              </div>
-            )}
+              <h3 className="mt-3 font-semibold text-foreground">Usar camara del celular</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Esta opcion abre la camara nativa y suele guardar una foto con mejor calidad para
+                OCR.
+              </p>
+              <Button
+                onClick={openNativeCamera}
+                className="mt-4 w-full"
+                variant="primary"
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                Abrir camara
+              </Button>
             </div>
-          </div>
+          ) : null}
+
+          {imgSrc || showInlineCamera ? (
+            <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-foreground/90 p-3 shadow-inner sm:max-w-xl">
+              <div className="relative mx-auto aspect-[3/4] max-h-[58svh] w-full overflow-hidden rounded-xl bg-black sm:aspect-[4/3] sm:max-h-[60vh]">
+                {!imgSrc ? (
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    screenshotQuality={1}
+                    minScreenshotWidth={1600}
+                    minScreenshotHeight={2200}
+                    videoConstraints={videoConstraints}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={imgSrc}
+                    alt="Documento capturado"
+                    className="h-full w-full bg-black object-contain"
+                  />
+                )}
+
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/20" />
+                <div className="pointer-events-none absolute inset-x-[10%] inset-y-[4%] rounded-xl border-[3px] border-dashed border-white/70 shadow-[0_0_0_999px_rgba(0,0,0,0.18)] sm:inset-x-[18%] sm:inset-y-[6%]">
+                  <span className="absolute left-1/2 top-1/2 w-44 -translate-x-1/2 -translate-y-1/2 rounded bg-black/60 px-3 py-1 text-center text-xs text-white/90 backdrop-blur-sm">
+                    Coloca la hoja dentro de este marco
+                  </span>
+                </div>
+
+                {!imgSrc ? (
+                  <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs text-white/85 backdrop-blur-sm">
+                    Captura la hoja vertical, completa y enfocada.
+                  </div>
+                ) : (
+                  <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs text-white/85 backdrop-blur-sm">
+                    Si el texto se ve borroso, toma otra foto con la camara del celular.
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
 
           {!imgSrc ? (
             <div className="grid w-full gap-2 rounded-xl border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground sm:grid-cols-3">
@@ -311,10 +393,21 @@ export function EscanearListaButton({ children, onImportSuccess }) {
           {!hasResults ? (
             <div className="flex w-full flex-col justify-center gap-3 sm:flex-row">
               {!imgSrc ? (
-                <Button onClick={capture} className="w-full sm:w-auto" variant="primary">
-                  <Camera className="mr-2 h-4 w-4" />
-                  Capturar documento
-                </Button>
+                <>
+                  {showInlineCamera ? (
+                    <Button onClick={capture} className="w-full sm:w-auto" variant="primary">
+                      <Camera className="mr-2 h-4 w-4" />
+                      Capturar documento
+                    </Button>
+                  ) : null}
+                  <Button
+                    onClick={() => setShowInlineCamera((current) => !current)}
+                    className="w-full sm:w-auto"
+                    variant="secondary"
+                  >
+                    {showInlineCamera ? 'Ocultar camara en pantalla' : 'Usar camara en pantalla'}
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button
