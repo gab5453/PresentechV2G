@@ -308,7 +308,7 @@ export function EstudiantesTab() {
             </ImportarExcelButton>
             <span className="text-sm text-muted-foreground font-medium">o</span>
             <EscanearListaButton 
-              onScanSuccess={() => {
+              onImportSuccess={() => {
                 setIsImportModalOpen(false)
                 loadData()
               }}
