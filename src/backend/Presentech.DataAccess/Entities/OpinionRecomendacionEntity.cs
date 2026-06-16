@@ -5,6 +5,7 @@ namespace Presentech.DataAccess.Entities
         public int id_opinion { get; set; }
         public int id_profesor { get; set; }
         public bool utilizaria_siguiente_anio { get; set; }
+        public int calificacion_usabilidad { get; set; }
         public string aspecto_mas_util { get; set; } = null!;
         public string aspectos_por_mejorar { get; set; } = null!;
         public DateTime created_at { get; set; }

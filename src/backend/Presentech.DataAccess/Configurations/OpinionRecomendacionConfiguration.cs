@@ -19,6 +19,9 @@ namespace Presentech.DataAccess.Configurations
             builder.Property(o => o.utilizaria_siguiente_anio)
                 .IsRequired();
 
+            builder.Property(o => o.calificacion_usabilidad)
+                .IsRequired();
+
             builder.Property(o => o.aspecto_mas_util)
                 .IsRequired();
 
@@ -32,6 +35,10 @@ namespace Presentech.DataAccess.Configurations
 
             builder.HasIndex(o => o.id_profesor)
                 .HasDatabaseName("IDX_OPINIONES_PROFESOR");
+
+            builder.ToTable(t => t.HasCheckConstraint(
+                "CHK_OPINIONES_CALIFICACION_USABILIDAD",
+                "calificacion_usabilidad BETWEEN 1 AND 5"));
 
             builder.HasOne(o => o.Profesor)
                 .WithMany(p => p.OpinionesRecomendaciones)

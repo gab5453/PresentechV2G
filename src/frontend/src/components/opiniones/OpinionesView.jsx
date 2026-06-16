@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { CheckCircle2, MessageSquareText, Send } from 'lucide-react'
+import { CheckCircle2, MessageSquareText, Send, Star } from 'lucide-react'
 import { Button } from '../common'
 import { getApiErrorMessage } from '../../services/api'
 import { registrarOpinion } from '../../services/opinionesService'
 
 const initialForm = {
   utilizaria_siguiente_anio: null,
+  calificacion_usabilidad: null,
   aspecto_mas_util: '',
   aspectos_por_mejorar: '',
 }
@@ -25,6 +26,9 @@ export function OpinionesView() {
   const validate = () => {
     if (form.utilizaria_siguiente_anio === null) {
       return 'Seleccione Sí o No en la primera pregunta.'
+    }
+    if (!form.calificacion_usabilidad) {
+      return 'Califique la usabilidad de la aplicación del 1 al 5.'
     }
     if (!form.aspecto_mas_util.trim()) {
       return 'Cuéntenos qué le pareció más útil.'
@@ -51,6 +55,7 @@ export function OpinionesView() {
     try {
       await registrarOpinion({
         utilizaria_siguiente_anio: form.utilizaria_siguiente_anio,
+        calificacion_usabilidad: form.calificacion_usabilidad,
         aspecto_mas_util: form.aspecto_mas_util.trim(),
         aspectos_por_mejorar: form.aspectos_por_mejorar.trim(),
       })
@@ -73,7 +78,7 @@ export function OpinionesView() {
           </h2>
         </div>
         <p className="text-sm leading-6 text-muted-foreground">
-          Su experiencia nos ayuda a mejorar PresentTech para los próximos años lectivos.
+          Su experiencia nos ayuda a mejorar PresenTech para los próximos años lectivos.
         </p>
       </div>
 
@@ -96,6 +101,25 @@ export function OpinionesView() {
               label="No"
               onClick={() => updateField('utilizaria_siguiente_anio', false)}
             />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="text-sm font-semibold text-foreground">
+            Califique la usabilidad de la aplicación
+          </legend>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Use una escala de 1 a 5, donde 1 es poco usable y 5 es muy usable.
+          </p>
+          <div className="mt-3 grid grid-cols-5 gap-2">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <RatingChoice
+                checked={form.calificacion_usabilidad === rating}
+                key={rating}
+                value={rating}
+                onClick={() => updateField('calificacion_usabilidad', rating)}
+              />
+            ))}
           </div>
         </fieldset>
 
@@ -152,6 +176,24 @@ function OpinionChoice({ checked, label, onClick }) {
       onClick={onClick}
     >
       {label}
+    </button>
+  )
+}
+
+function RatingChoice({ checked, onClick, value }) {
+  return (
+    <button
+      aria-pressed={checked}
+      className={`flex min-h-14 flex-col items-center justify-center rounded-lg border px-2 py-2 text-sm font-semibold transition-all ${
+        checked
+          ? 'border-primary bg-primary/10 text-primary shadow-sm ring-2 ring-primary/15'
+          : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'
+      }`}
+      type="button"
+      onClick={onClick}
+    >
+      <Star aria-hidden="true" className={`h-5 w-5 ${checked ? 'fill-current' : ''}`} />
+      <span className="mt-1">{value}</span>
     </button>
   )
 }

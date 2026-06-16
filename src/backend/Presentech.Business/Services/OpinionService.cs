@@ -38,6 +38,7 @@ namespace Presentech.Business.Services
             {
                 id_profesor = idProfesor,
                 utilizaria_siguiente_anio = request.utilizaria_siguiente_anio!.Value,
+                calificacion_usabilidad = request.calificacion_usabilidad!.Value,
                 aspecto_mas_util = request.aspecto_mas_util.Trim(),
                 aspectos_por_mejorar = request.aspectos_por_mejorar.Trim(),
                 created_at = DateTime.UtcNow,

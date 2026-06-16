@@ -11,6 +11,12 @@ namespace Presentech.Business.Validators
                 .NotNull()
                 .WithMessage("Debe indicar si utilizaría la aplicación el siguiente año lectivo.");
 
+            RuleFor(x => x.calificacion_usabilidad)
+                .NotNull()
+                .WithMessage("Debe calificar la usabilidad de la aplicación.")
+                .InclusiveBetween(1, 5)
+                .WithMessage("La calificación de usabilidad debe estar entre 1 y 5.");
+
             RuleFor(x => x.aspecto_mas_util)
                 .NotEmpty()
                 .WithMessage("Indique qué le pareció más útil.")
