@@ -14,6 +14,7 @@ import {
 import { getApiData, getApiErrorMessage } from '../../services/api'
 import { obtenerDashboardAdmin, obtenerDashboardProfesor } from '../../services/dashboardService'
 import { Button, Spinner } from '../common'
+import { MatrizAsistenciaAdmin } from './MatrizAsistenciaAdmin'
 
 export function DashboardView({ role }) {
   const [dashboardData, setDashboardData] = useState(null)
@@ -149,6 +150,8 @@ export function DashboardView({ role }) {
                   description="Promedio global"
                 />
               </div>
+
+              {role === 'admin' ? <MatrizAsistenciaAdmin /> : null}
 
               <RiskPanel estudiantes={dashboardData.estudiantes_en_riesgo ?? []} />
             </div>

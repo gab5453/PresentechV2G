@@ -82,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IReporteService, ReporteService>();
         services.AddScoped<IOpinionService, OpinionService>();
+        services.AddScoped<IMatrizAsistenciaService, MatrizAsistenciaService>();
         services.AddHttpClient<IOcrService, OcrService>();
 
         return services;

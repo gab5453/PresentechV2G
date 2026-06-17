@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentech.Api.Controllers.V1;
 using Presentech.Api.Models.Common;
 using Presentech.Business.DTOs.Ocr;
 using Presentech.Business.Exceptions;
