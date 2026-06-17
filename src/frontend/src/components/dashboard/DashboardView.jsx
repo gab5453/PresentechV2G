@@ -4,9 +4,6 @@ import {
   BarChart3,
   BookOpen,
   CheckCircle2,
-  ClipboardList,
-  FileText,
-  MessageSquareText,
   RefreshCw,
   ShieldCheck,
   Users,
@@ -61,10 +58,10 @@ export function DashboardView({ role }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-medium text-foreground">
-            {role === 'admin' ? 'Vista General de la Institución' : 'Resumen de Mis Clases'}
+            {role === 'admin' ? 'Vista General de la Institucion' : 'Resumen de Mis Clases'}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Estadísticas de asistencia y alertas de estudiantes.
+            Estadisticas de asistencia y alertas de estudiantes.
           </p>
         </div>
         <Button variant="secondary" onClick={loadData} isLoading={isLoading}>
@@ -91,15 +88,17 @@ export function DashboardView({ role }) {
             <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  Panel docente
+                  {role === 'admin' ? 'Panel administrativo' : 'Panel docente'}
                 </span>
                 <h3 className="mt-4 text-2xl font-semibold text-foreground">
-                  Tu semana académica en un vistazo
+                  {role === 'admin'
+                    ? 'Seguimiento institucional de asistencia'
+                    : 'Tu semana academica en un vistazo'}
                 </h3>
                 <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                   Tienes {dashboardData.total_clases} clases activas y{' '}
-                  {dashboardData.total_estudiantes} estudiantes registrados. La asistencia
-                  global está en {indicadores.asistencia.toFixed(1)}%.
+                  {dashboardData.total_estudiantes} estudiantes registrados. La asistencia global
+                  esta en {indicadores.asistencia.toFixed(1)}%.
                 </p>
               </div>
 
@@ -125,67 +124,36 @@ export function DashboardView({ role }) {
             </div>
           </section>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="min-w-0 space-y-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                <MetricCard
-                  icon={Users}
-                  label="Total estudiantes"
-                  tone="primary"
-                  value={dashboardData.total_estudiantes}
-                  description="En tus cursos activos"
-                />
-                <MetricCard
-                  icon={BookOpen}
-                  label="Clases activas"
-                  tone="success"
-                  value={dashboardData.total_clases}
-                  description="Materias asignadas"
-                />
-                <MetricCard
-                  icon={BarChart3}
-                  label="Tasa de asistencia"
-                  tone="info"
-                  value={`${indicadores.asistencia.toFixed(1)}%`}
-                  description="Promedio global"
-                />
-              </div>
-
-              {role === 'admin' ? <MatrizAsistenciaAdmin /> : null}
-
-              <RiskPanel estudiantes={dashboardData.estudiantes_en_riesgo ?? []} />
+          <div className="min-w-0 space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <MetricCard
+                icon={Users}
+                label="Total estudiantes"
+                tone="primary"
+                value={dashboardData.total_estudiantes}
+                description="En tus cursos activos"
+              />
+              <MetricCard
+                icon={BookOpen}
+                label="Clases activas"
+                tone="success"
+                value={dashboardData.total_clases}
+                description="Materias asignadas"
+              />
+              <MetricCard
+                icon={BarChart3}
+                label="Tasa de asistencia"
+                tone="info"
+                value={`${indicadores.asistencia.toFixed(1)}%`}
+                description="Promedio global"
+              />
             </div>
 
-            <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
-              <section className="rounded-2xl border border-border/50 bg-card/70 p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground">Estado de asistencia</h3>
-                <div className="mt-4 rounded-xl bg-primary/5 p-4">
-                  <p className="text-3xl font-semibold text-foreground">
-                    {indicadores.asistencia.toFixed(1)}%
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Asistencia global registrada.
-                  </p>
-                </div>
-              </section>
+            {role === 'admin' ? <MatrizAsistenciaAdmin /> : null}
 
-              <section className="rounded-2xl border border-border/50 bg-card/70 p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground">Acciones rápidas</h3>
-                <div className="mt-3 grid gap-2">
-                  <ActionHint icon={ClipboardList} text="Selecciona un curso en Mis Clases." />
-                  <ActionHint icon={FileText} text="Genera reportes por fecha o estudiante." />
-                  <ActionHint icon={MessageSquareText} text="Registra opiniones y recomendaciones." />
-                </div>
-              </section>
-
-              <section className="rounded-2xl border border-border/50 bg-card/70 p-4 shadow-sm">
-                <h3 className="font-semibold text-foreground">Lectura rápida</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Si aparecen estudiantes en riesgo, revisa sus reportes individuales antes de
-                  tomar decisiones académicas.
-                </p>
-              </section>
-            </aside>
+            {role !== 'admin' ? (
+              <RiskPanel estudiantes={dashboardData.estudiantes_en_riesgo ?? []} />
+            ) : null}
           </div>
         </>
       ) : null}
@@ -234,7 +202,7 @@ function RiskPanel({ estudiantes }) {
           </span>
           <div>
             <h3 className="font-semibold text-foreground">Estudiantes en riesgo</h3>
-            <p className="text-sm text-muted-foreground">Casos con 2 o más faltas.</p>
+            <p className="text-sm text-muted-foreground">Casos con 2 o mas faltas.</p>
           </div>
         </div>
         <span className="rounded-full bg-warning-bg px-3 py-1 text-xs font-semibold text-warning">
@@ -247,7 +215,7 @@ function RiskPanel({ estudiantes }) {
           <CheckCircle2 aria-hidden="true" className="mx-auto h-10 w-10 text-success" />
           <p className="mt-3 font-medium text-foreground">Todo se ve bien por ahora</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            No hay estudiantes en riesgo de deserción en este momento.
+            No hay estudiantes en riesgo de desercion en este momento.
           </p>
         </div>
       ) : (
@@ -271,14 +239,5 @@ function RiskPanel({ estudiantes }) {
         </div>
       )}
     </section>
-  )
-}
-
-function ActionHint({ icon: Icon, text }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl bg-primary/5 px-3 py-3 text-sm text-muted-foreground">
-      <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />
-      <span>{text}</span>
-    </div>
   )
 }

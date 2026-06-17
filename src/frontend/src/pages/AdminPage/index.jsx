@@ -9,6 +9,7 @@ import { DashboardView } from '../../components/dashboard'
 
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState('profesores')
+  const isDashboard = activeTab === 'dashboard'
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-chart-line' },
@@ -21,7 +22,11 @@ export function AdminPage() {
 
   return (
     <AppLayout title="Administración">
-      <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6">
+      <section
+        className={`container mx-auto px-4 py-4 md:py-6 ${
+          isDashboard ? 'max-w-[1600px]' : 'max-w-5xl'
+        }`}
+      >
         <div className="mb-6">
           <h2 className="text-xl font-medium text-foreground">Panel de Control</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -48,7 +53,13 @@ export function AdminPage() {
         </div>
 
         {/* Contenido del Tab */}
-        <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-md p-4 md:p-6 shadow-xl animate-fade-in">
+        <div
+          className={
+            isDashboard
+              ? 'animate-fade-in'
+              : 'rounded-2xl border border-border/50 bg-card/80 p-4 shadow-xl backdrop-blur-md animate-fade-in md:p-6'
+          }
+        >
           {activeTab === 'dashboard' && <DashboardView role="admin" />}
           {activeTab === 'profesores' && <ProfesoresTab />}
           {activeTab === 'paralelos' && <ParalelosTab />}
