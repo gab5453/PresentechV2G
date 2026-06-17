@@ -96,5 +96,79 @@ namespace Presentech.Business.Services
 
             return response;
         }
+
+        public async Task<IReadOnlyList<AsistenciaRegistradaResponse>> ObtenerAsistenciasRegistradasAsync(
+            DateOnly fecha,
+            int? idProfesor,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _unitOfWork.AsistenciaRepository.GetAll()
+                .Where(a =>
+                    a.RegistroAsistencia.fecha == fecha &&
+                    a.RegistroAsistencia.ClaseHorario.Clase.activo);
+
+            if (idProfesor.HasValue)
+            {
+                query = query.Where(a =>
+                    a.RegistroAsistencia.ClaseHorario.Clase.id_profesor == idProfesor.Value);
+            }
+
+            var registros = await query
+                .GroupBy(a => new
+                {
+                    a.id_registro,
+                    a.RegistroAsistencia.fecha,
+                    a.RegistroAsistencia.created_at,
+                    a.RegistroAsistencia.ClaseHorario.hora_inicio,
+                    a.RegistroAsistencia.ClaseHorario.hora_fin,
+                    Dia = a.RegistroAsistencia.ClaseHorario.DiaSemana.nombre,
+                    a.RegistroAsistencia.ClaseHorario.Clase.id_profesor,
+                    ProfesorNombres = a.RegistroAsistencia.ClaseHorario.Clase.Profesor.nombres,
+                    ProfesorApellidos = a.RegistroAsistencia.ClaseHorario.Clase.Profesor.apellidos,
+                    Materia = a.RegistroAsistencia.ClaseHorario.Clase.Materia.Nombre,
+                    Paralelo = a.RegistroAsistencia.ClaseHorario.Clase.Paralelo.nombre,
+                })
+                .Select(g => new
+                {
+                    g.Key.id_registro,
+                    g.Key.fecha,
+                    g.Key.created_at,
+                    g.Key.id_profesor,
+                    g.Key.ProfesorNombres,
+                    g.Key.ProfesorApellidos,
+                    g.Key.Materia,
+                    g.Key.Paralelo,
+                    g.Key.Dia,
+                    g.Key.hora_inicio,
+                    g.Key.hora_fin,
+                    TotalEstudiantes = g.Count(),
+                    TotalPresentes = g.Count(a => a.asistio || a.atrasado),
+                    TotalAusentes = g.Count(a => !a.asistio && !a.atrasado),
+                    TotalAtrasados = g.Count(a => a.atrasado),
+                })
+                .ToListAsync(cancellationToken);
+
+            return registros
+                .OrderByDescending(r => r.created_at)
+                .ThenBy(r => r.hora_inicio)
+                .Select(r => new AsistenciaRegistradaResponse
+                {
+                    id_registro = r.id_registro,
+                    fecha = r.fecha,
+                    created_at = r.created_at,
+                    id_profesor = r.id_profesor,
+                    docente = $"{r.ProfesorNombres} {r.ProfesorApellidos}",
+                    materia = r.Materia,
+                    paralelo = r.Paralelo,
+                    dia = r.Dia,
+                    hora_inicio = r.hora_inicio.ToString("HH:mm"),
+                    hora_fin = r.hora_fin.ToString("HH:mm"),
+                    total_estudiantes = r.TotalEstudiantes,
+                    total_presentes = r.TotalPresentes,
+                    total_ausentes = r.TotalAusentes,
+                    total_atrasados = r.TotalAtrasados,
+                })
+                .ToList();
+        }
     }
 }

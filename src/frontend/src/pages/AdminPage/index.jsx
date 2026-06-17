@@ -5,14 +5,16 @@ import { ParalelosTab } from './ParalelosTab'
 import { ClasesTab } from './ClasesTab'
 import { MateriasTab } from './MateriasTab'
 import { EstudiantesTab } from './EstudiantesTab'
-import { DashboardView } from '../../components/dashboard'
+import { AsistenciasRegistradasView, DashboardView } from '../../components/dashboard'
 
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState('profesores')
   const isDashboard = activeTab === 'dashboard'
+  const isWideContent = isDashboard || activeTab === 'asistencias-registradas'
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-chart-line' },
+    { id: 'asistencias-registradas', label: 'Asistencias Registradas', icon: 'fa-solid fa-clipboard-check' },
     { id: 'profesores', label: 'Profesores', icon: 'fa-solid fa-chalkboard-user' },
     { id: 'paralelos', label: 'Paralelos', icon: 'fa-solid fa-users-rectangle' },
     { id: 'materias', label: 'Materias', icon: 'fa-solid fa-book' },
@@ -24,7 +26,7 @@ export function AdminPage() {
     <AppLayout title="Administración">
       <section
         className={`container mx-auto px-4 py-4 md:py-6 ${
-          isDashboard ? 'max-w-[1600px]' : 'max-w-5xl'
+          isWideContent ? 'max-w-[1600px]' : 'max-w-5xl'
         }`}
       >
         <div className="mb-6">
@@ -55,12 +57,15 @@ export function AdminPage() {
         {/* Contenido del Tab */}
         <div
           className={
-            isDashboard
+            isWideContent
               ? 'animate-fade-in'
               : 'rounded-2xl border border-border/50 bg-card/80 p-4 shadow-xl backdrop-blur-md animate-fade-in md:p-6'
           }
         >
           {activeTab === 'dashboard' && <DashboardView role="admin" />}
+          {activeTab === 'asistencias-registradas' && (
+            <AsistenciasRegistradasView role="admin" />
+          )}
           {activeTab === 'profesores' && <ProfesoresTab />}
           {activeTab === 'paralelos' && <ParalelosTab />}
           {activeTab === 'materias' && <MateriasTab />}

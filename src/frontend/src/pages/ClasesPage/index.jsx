@@ -5,7 +5,7 @@ import { ClasesGrid } from '../../components/clases'
 import { AppLayout } from '../../components/layout'
 import { getApiData, getApiErrorMessage } from '../../services/api'
 import { obtenerMisClases } from '../../services/clasesService'
-import { DashboardView } from '../../components/dashboard'
+import { AsistenciasRegistradasView, DashboardView } from '../../components/dashboard'
 import { ReportesView } from '../../components/reportes'
 import { OpinionesView } from '../../components/opiniones'
 import { formatHorario, getProximaClase } from '../../utils/claseUtils'
@@ -19,6 +19,7 @@ export function ClasesPage() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
+    { id: 'asistencias-registradas', label: 'Asistencias Registradas' },
     { id: 'clases', label: 'Mis Clases' },
     { id: 'reportes', label: 'Reportes' },
     { id: 'opiniones', label: 'Opiniones y Recomendaciones' },
@@ -175,6 +176,9 @@ export function ClasesPage() {
 
         <div className="animate-fade-in rounded-2xl border border-border/50 bg-card/80 p-4 shadow-xl backdrop-blur-md md:p-6">
           {activeTab === 'dashboard' && <DashboardView role="profesor" />}
+          {activeTab === 'asistencias-registradas' && (
+            <AsistenciasRegistradasView role="profesor" />
+          )}
           {activeTab === 'reportes' && <ReportesView />}
           {activeTab === 'opiniones' && <OpinionesView />}
 
