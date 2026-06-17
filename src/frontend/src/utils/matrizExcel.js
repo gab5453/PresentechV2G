@@ -1,9 +1,57 @@
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx-js-style'
 
-const STATUS_LABELS = {
-  P: '✓',
-  X: 'X',
-  '-': '-',
+const CHECK = '✓'
+
+const monthColors = [
+  'A6A6A6',
+  '6FA8DC',
+  'A6A6A6',
+  '6FA8DC',
+  'D996D6',
+  'D996D6',
+  'A6A6A6',
+  '6FA8DC',
+  'A6A6A6',
+  '6FA8DC',
+]
+
+const borderThin = {
+  top: { style: 'thin', color: { rgb: '000000' } },
+  right: { style: 'thin', color: { rgb: '000000' } },
+  bottom: { style: 'thin', color: { rgb: '000000' } },
+  left: { style: 'thin', color: { rgb: '000000' } },
+}
+
+const headerStyle = {
+  font: { bold: true, sz: 14, color: { rgb: '000000' } },
+  alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+  border: borderThin,
+}
+
+const dayHeaderStyle = {
+  font: { bold: true, sz: 8, color: { rgb: '000000' } },
+  alignment: { horizontal: 'center', vertical: 'center' },
+  border: borderThin,
+}
+
+const bodyStyle = {
+  font: { sz: 10, color: { rgb: '000000' } },
+  alignment: { horizontal: 'center', vertical: 'center' },
+  border: {
+    top: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    right: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    bottom: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    left: { style: 'thin', color: { rgb: 'D9D9D9' } },
+  },
+}
+
+const emptyStyle = {
+  border: {
+    top: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    right: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    bottom: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    left: { style: 'thin', color: { rgb: 'D9D9D9' } },
+  },
 }
 
 function getMonthGroups(days) {
@@ -21,77 +69,55 @@ function getMonthGroups(days) {
   return groups
 }
 
+function getStatusValue(status) {
+  if (status === 'P') return CHECK
+  if (status === 'X') return 'X'
+  if (status === '-') return '-'
+  return ''
+}
+
 function buildRows(matriz) {
-  const summaryHeaders = [
-    'Asist.',
-    'Faltas',
-    'Parc.',
-    'Asist.',
-    'Faltas',
-    'Parc.',
-    'Asist.',
-    'Faltas',
-    'Parc.',
-    'Faltas',
-    'Parc.',
+  const totalJustificadasColumn = 2 + matriz.dias.length
+  const totalInjustificadasColumn = totalJustificadasColumn + 1
+  const columnCount = totalInjustificadasColumn + 1
+
+  const rows = [
+    Array.from({ length: columnCount }, () => ''),
+    Array.from({ length: columnCount }, () => ''),
+    Array.from({ length: columnCount }, () => ''),
   ]
 
-  const firstRow = ['No.', 'Nombre del Alumno']
-  const secondRow = ['', '']
-  const thirdRow = ['', '']
+  rows[0][0] = 'No'
+  rows[0][1] = 'Nombre del Alumno'
 
-  matriz.dias.forEach((day) => {
-    firstRow.push('')
-    secondRow.push(day.dia_mes)
-    thirdRow.push(day.inicial_dia)
+  getMonthGroups(matriz.dias).forEach((group) => {
+    rows[0][2 + group.startIndex] = `Mes: ${group.month}`
   })
 
-  firstRow.push(
-    'Septiembre - Diciembre',
-    '',
-    '',
-    'Enero - Marzo',
-    '',
-    '',
-    'Abril - Junio',
-    '',
-    '',
-    'Total',
-    '',
-  )
-  secondRow.push(...summaryHeaders)
-  thirdRow.push(...summaryHeaders)
+  matriz.dias.forEach((day, index) => {
+    rows[1][2 + index] = day.dia_mes
+    rows[2][2 + index] = day.inicial_dia
+  })
 
-  const studentRows = matriz.estudiantes.map((student) => {
-    const row = [student.numero, student.nombre_estudiante]
+  rows[0][totalJustificadasColumn] = 'TOTAL FALTAS'
+  rows[1][totalJustificadasColumn] = 'FALTAS JUSTIFICADAS'
+  rows[1][totalInjustificadasColumn] = 'FALTAS INJUSTIFICADAS'
 
-    matriz.dias.forEach((day) => {
-      const status = student.estados_por_fecha?.[day.fecha] ?? ''
-      row.push(STATUS_LABELS[status] ?? '')
+  matriz.estudiantes.forEach((student) => {
+    const row = Array.from({ length: columnCount }, () => '')
+    row[0] = student.numero
+    row[1] = student.nombre_estudiante
+
+    matriz.dias.forEach((day, index) => {
+      row[2 + index] = getStatusValue(student.estados_por_fecha?.[day.fecha] ?? '')
     })
 
-    const periodo1 = student.resumen_periodos?.periodo_1 ?? {}
-    const periodo2 = student.resumen_periodos?.periodo_2 ?? {}
-    const periodo3 = student.resumen_periodos?.periodo_3 ?? {}
-
-    row.push(
-      periodo1.asistencias ?? 0,
-      periodo1.faltas ?? 0,
-      periodo1.parciales ?? 0,
-      periodo2.asistencias ?? 0,
-      periodo2.faltas ?? 0,
-      periodo2.parciales ?? 0,
-      periodo3.asistencias ?? 0,
-      periodo3.faltas ?? 0,
-      periodo3.parciales ?? 0,
-      student.total_faltas ?? 0,
-      student.total_parciales ?? 0,
-    )
-
-    return row
+    row[totalJustificadasColumn] = 0
+    row[totalInjustificadasColumn] = student.total_faltas ?? 0
+    rows.push(row)
   })
 
-  return [firstRow, secondRow, thirdRow, ...studentRows]
+  return rows
 }
 
 function buildMerges(matriz) {
@@ -101,95 +127,114 @@ function buildMerges(matriz) {
   ]
 
   getMonthGroups(matriz.dias).forEach((group) => {
-    const start = 2 + group.startIndex
-    const end = start + group.count - 1
-    merges.push({ s: { r: 0, c: start }, e: { r: 0, c: end } })
+    merges.push({
+      s: { r: 0, c: 2 + group.startIndex },
+      e: { r: 0, c: 2 + group.startIndex + group.count - 1 },
+    })
   })
 
-  const summaryStart = 2 + matriz.dias.length
-  merges.push({ s: { r: 0, c: summaryStart }, e: { r: 0, c: summaryStart + 2 } })
-  merges.push({ s: { r: 0, c: summaryStart + 3 }, e: { r: 0, c: summaryStart + 5 } })
-  merges.push({ s: { r: 0, c: summaryStart + 6 }, e: { r: 0, c: summaryStart + 8 } })
-  merges.push({ s: { r: 0, c: summaryStart + 9 }, e: { r: 0, c: summaryStart + 10 } })
+  const totalStart = 2 + matriz.dias.length
+  merges.push({ s: { r: 0, c: totalStart }, e: { r: 0, c: totalStart + 1 } })
+  merges.push({ s: { r: 1, c: totalStart }, e: { r: 2, c: totalStart } })
+  merges.push({ s: { r: 1, c: totalStart + 1 }, e: { r: 2, c: totalStart + 1 } })
 
   return merges
 }
 
-function applyWorksheetMetadata(sheet, matriz) {
-  const totalColumns = 2 + matriz.dias.length + 11
-
+function setSheetMetadata(sheet, matriz) {
   sheet['!merges'] = buildMerges(matriz)
   sheet['!cols'] = [
     { wch: 5 },
-    { wch: 34 },
-    ...matriz.dias.map(() => ({ wch: 4 })),
-    ...Array.from({ length: 11 }, () => ({ wch: 9 })),
+    { wch: 42 },
+    ...matriz.dias.map(() => ({ wch: 3 })),
+    { wch: 19 },
+    { wch: 21 },
   ]
   sheet['!rows'] = [
     { hpt: 24 },
-    { hpt: 20 },
-    { hpt: 20 },
-    ...matriz.estudiantes.map(() => ({ hpt: 19 })),
+    { hpt: 16 },
+    { hpt: 16 },
+    ...matriz.estudiantes.map(() => ({ hpt: 15 })),
   ]
   sheet['!freeze'] = { xSplit: 2, ySplit: 3 }
-  sheet['!autofilter'] = {
-    ref: XLSX.utils.encode_range({
-      s: { r: 2, c: 0 },
-      e: { r: Math.max(3, matriz.estudiantes.length + 2), c: totalColumns - 1 },
-    }),
-  }
 }
 
-function applyBestEffortStyles(sheet, matriz) {
+function styleCell(sheet, row, col, style) {
+  const address = XLSX.utils.encode_cell({ r: row, c: col })
+  if (!sheet[address]) sheet[address] = { t: 's', v: '' }
+  sheet[address].s = style
+}
+
+function applyStyles(sheet, matriz) {
   const range = XLSX.utils.decode_range(sheet['!ref'])
-  const summaryStart = 2 + matriz.dias.length
+  const totalStart = 2 + matriz.dias.length
 
   for (let row = range.s.r; row <= range.e.r; row += 1) {
     for (let col = range.s.c; col <= range.e.c; col += 1) {
+      styleCell(sheet, row, col, row <= 2 ? dayHeaderStyle : bodyStyle)
+    }
+  }
+
+  styleCell(sheet, 0, 0, { ...headerStyle, font: { bold: true, sz: 13 } })
+  styleCell(sheet, 0, 1, { ...headerStyle, font: { bold: true, sz: 13 } })
+
+  getMonthGroups(matriz.dias).forEach((group, index) => {
+    const start = 2 + group.startIndex
+    const end = start + group.count - 1
+    const fillColor = monthColors[index % monthColors.length]
+
+    for (let col = start; col <= end; col += 1) {
+      styleCell(sheet, 0, col, {
+        ...headerStyle,
+        font: { bold: true, sz: 15, color: { rgb: '000000' } },
+        fill: { fgColor: { rgb: fillColor } },
+      })
+    }
+  })
+
+  for (let col = totalStart; col <= totalStart + 1; col += 1) {
+    styleCell(sheet, 0, col, {
+      ...headerStyle,
+      font: { bold: true, sz: 11 },
+    })
+    styleCell(sheet, 1, col, {
+      ...headerStyle,
+      font: { bold: true, sz: 10 },
+    })
+    styleCell(sheet, 2, col, {
+      ...headerStyle,
+      font: { bold: true, sz: 10 },
+    })
+  }
+
+  for (let row = 3; row <= range.e.r; row += 1) {
+    const student = matriz.estudiantes[row - 3]
+    const fill =
+      student?.nivel_alerta === 'rojo'
+        ? 'F4CCCC'
+        : student?.nivel_alerta === 'amarillo'
+          ? 'FFF2CC'
+          : null
+
+    for (let col = 0; col <= range.e.c; col += 1) {
       const address = XLSX.utils.encode_cell({ r: row, c: col })
-      const cell = sheet[address]
-      if (!cell) continue
-
-      cell.s = {
+      const current = sheet[address]?.s ?? {}
+      sheet[address].s = {
+        ...current,
         alignment: {
-          horizontal: col === 1 && row >= 3 ? 'left' : 'center',
+          horizontal: col === 1 ? 'left' : 'center',
           vertical: 'center',
-          wrapText: true,
         },
-        border: {
-          top: { style: 'thin', color: { rgb: '000000' } },
-          bottom: { style: 'thin', color: { rgb: '000000' } },
-          left: { style: 'thin', color: { rgb: '000000' } },
-          right: { style: 'thin', color: { rgb: '000000' } },
-        },
-      }
-
-      if (row <= 2) {
-        cell.s.font = { bold: true }
-        cell.s.fill = { fgColor: { rgb: row === 0 ? 'D9E2F3' : 'F2F2F2' } }
-      }
-
-      if (row >= 3) {
-        const student = matriz.estudiantes[row - 3]
-        if (student?.nivel_alerta === 'rojo') {
-          cell.s.fill = { fgColor: { rgb: 'F4CCCC' } }
-        } else if (student?.nivel_alerta === 'amarillo') {
-          cell.s.fill = { fgColor: { rgb: 'FFF2CC' } }
-        }
-
-        if (col >= summaryStart) {
-          cell.s.font = { bold: true }
-        }
+        fill: fill ? { fgColor: { rgb: fill } } : undefined,
       }
     }
   }
-}
 
-function setMonthHeaderValues(sheet, matriz) {
-  getMonthGroups(matriz.dias).forEach((group) => {
-    const address = XLSX.utils.encode_cell({ r: 0, c: 2 + group.startIndex })
-    sheet[address].v = `Mes: ${group.month}`
-  })
+  for (let row = range.e.r + 1; row <= 237; row += 1) {
+    for (let col = 0; col <= range.e.c; col += 1) {
+      styleCell(sheet, row, col, emptyStyle)
+    }
+  }
 }
 
 function getSafeFileName(matriz) {
@@ -208,9 +253,8 @@ export function downloadMatrizAsistenciaExcel(matriz) {
 
   const rows = buildRows(matriz)
   const sheet = XLSX.utils.aoa_to_sheet(rows)
-  setMonthHeaderValues(sheet, matriz)
-  applyWorksheetMetadata(sheet, matriz)
-  applyBestEffortStyles(sheet, matriz)
+  setSheetMetadata(sheet, matriz)
+  applyStyles(sheet, matriz)
 
   const workbook = XLSX.utils.book_new()
   workbook.Props = {
@@ -218,6 +262,11 @@ export function downloadMatrizAsistenciaExcel(matriz) {
     Subject: `Anio lectivo ${matriz.anio_lectivo}`,
     Author: 'PresenTech',
   }
-  XLSX.utils.book_append_sheet(workbook, sheet, 'Matriz')
-  XLSX.writeFile(workbook, getSafeFileName(matriz), { bookType: 'xlsx', compression: true })
+
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Hoja1')
+  XLSX.writeFile(workbook, getSafeFileName(matriz), {
+    bookType: 'xlsx',
+    cellStyles: true,
+    compression: true,
+  })
 }
