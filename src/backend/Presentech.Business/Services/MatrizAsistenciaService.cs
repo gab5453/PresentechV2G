@@ -146,6 +146,117 @@ namespace Presentech.Business.Services
             };
         }
 
+        public async Task<ReporteTrimestralEstudianteResponse> GenerarReporteTrimestralEstudianteAsync(
+            int idParalelo,
+            int idEstudiante,
+            int? anioInicio,
+            CancellationToken cancellationToken = default)
+        {
+            var startYear = anioInicio ?? GetCurrentSchoolYearStart();
+            var fechaInicio = new DateOnly(startYear, 9, 1);
+            var fechaFin = new DateOnly(startYear + 1, 6, 30);
+
+            var paralelo = (await _unitOfWork.ParaleloRepository.ObtenerTodosActivosAsync(cancellationToken))
+                .FirstOrDefault(p => p.id_paralelo == idParalelo)
+                ?? throw new NotFoundException("Paralelo", idParalelo);
+
+            var estudiante = await _unitOfWork.EstudianteRepository.GetAll()
+                .AsNoTracking()
+                .Where(e => e.id_estudiante == idEstudiante && e.activo)
+                .Select(e => new
+                {
+                    e.id_estudiante,
+                    e.apellidos,
+                    e.nombres,
+                    PerteneceParalelo = e.ParaleloEstudiantes.Any(pe =>
+                        pe.id_paralelo == idParalelo && pe.activo),
+                })
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("Estudiante", idEstudiante);
+
+            if (!estudiante.PerteneceParalelo)
+                throw new BusinessException("El estudiante seleccionado no pertenece al paralelo indicado.");
+
+            var materias = await _unitOfWork.ClaseRepository.GetAll()
+                .AsNoTracking()
+                .Where(c => c.activo && c.id_paralelo == idParalelo && c.Materia.Activo)
+                .Select(c => new
+                {
+                    c.id_clase,
+                    c.id_materia,
+                    Materia = c.Materia.Nombre,
+                })
+                .ToListAsync(cancellationToken);
+
+            var claseMateriaMap = materias.ToDictionary(c => c.id_clase);
+            var clasesIds = claseMateriaMap.Keys.ToList();
+
+            var asistencias = await _unitOfWork.AsistenciaRepository.GetAll()
+                .AsNoTracking()
+                .Where(a =>
+                    a.id_estudiante == idEstudiante &&
+                    a.RegistroAsistencia.fecha >= fechaInicio &&
+                    a.RegistroAsistencia.fecha <= fechaFin &&
+                    clasesIds.Contains(a.RegistroAsistencia.ClaseHorario.id_clase))
+                .Select(a => new
+                {
+                    IdClase = a.RegistroAsistencia.ClaseHorario.id_clase,
+                    a.RegistroAsistencia.fecha,
+                    Presente = a.asistio || a.atrasado,
+                })
+                .ToListAsync(cancellationToken);
+
+            var estadosPorMateriaFecha = asistencias
+                .Where(a => claseMateriaMap.ContainsKey(a.IdClase))
+                .GroupBy(a => new
+                {
+                    claseMateriaMap[a.IdClase].id_materia,
+                    claseMateriaMap[a.IdClase].Materia,
+                    a.fecha,
+                })
+                .ToList();
+
+            var materiasReporte = materias
+                .GroupBy(m => new { m.id_materia, m.Materia })
+                .OrderBy(g => g.Key.Materia)
+                .Select(g =>
+                {
+                    var estados = estadosPorMateriaFecha
+                        .Where(e => e.Key.id_materia == g.Key.id_materia)
+                        .ToDictionary(
+                            e => e.Key.fecha,
+                            e => ResolveDailyState(e.Select(x => x.Presente).ToList()));
+
+                    var periodo1 = CountPeriodByDate(estados, new DateOnly(startYear, 9, 1), new DateOnly(startYear, 12, 31));
+                    var periodo2 = CountPeriodByDate(estados, new DateOnly(startYear + 1, 1, 1), new DateOnly(startYear + 1, 3, 31));
+                    var periodo3 = CountPeriodByDate(estados, new DateOnly(startYear + 1, 4, 1), new DateOnly(startYear + 1, 6, 30));
+
+                    return new ReporteTrimestralMateriaDto
+                    {
+                        id_materia = g.Key.id_materia,
+                        materia = g.Key.Materia,
+                        periodo_1 = periodo1,
+                        periodo_2 = periodo2,
+                        periodo_3 = periodo3,
+                        total = SumReportSummaries(periodo1, periodo2, periodo3),
+                    };
+                })
+                .ToList();
+
+            return new ReporteTrimestralEstudianteResponse
+            {
+                id_estudiante = estudiante.id_estudiante,
+                nombre_estudiante = $"{estudiante.apellidos}, {estudiante.nombres}",
+                id_paralelo = paralelo.id_paralelo,
+                paralelo = paralelo.nombre,
+                anio_lectivo = $"{startYear}-{startYear + 1}",
+                fecha_inicio = fechaInicio,
+                fecha_fin = fechaFin,
+                materias = materiasReporte,
+                resumen = SumReportSummaries(materiasReporte.Select(m => m.total).ToArray()),
+            };
+        }
+
         private static int GetCurrentSchoolYearStart()
         {
             var today = DateTime.Today;
@@ -210,6 +321,46 @@ namespace Presentech.Business.Services
             }
 
             return result;
+        }
+
+        private static ReporteTrimestralResumenDto CountPeriodByDate(
+            IReadOnlyDictionary<DateOnly, string> estados,
+            DateOnly start,
+            DateOnly end)
+        {
+            var result = new ReporteTrimestralResumenDto();
+
+            for (var date = start; date <= end; date = date.AddDays(1))
+            {
+                if (!estados.TryGetValue(date, out var estado))
+                    continue;
+
+                switch (estado)
+                {
+                    case "P":
+                        result.asistencias++;
+                        break;
+                    case "X":
+                        result.faltas++;
+                        break;
+                    case "-":
+                        result.parciales++;
+                        break;
+                }
+            }
+
+            return result;
+        }
+
+        private static ReporteTrimestralResumenDto SumReportSummaries(
+            params ReporteTrimestralResumenDto[] summaries)
+        {
+            return new ReporteTrimestralResumenDto
+            {
+                asistencias = summaries.Sum(s => s.asistencias),
+                faltas = summaries.Sum(s => s.faltas),
+                parciales = summaries.Sum(s => s.parciales),
+            };
         }
 
         private static string GetAlertLevel(int totalFaltas)

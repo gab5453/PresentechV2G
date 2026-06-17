@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, Download, RefreshCw } from 'lucide-react'
 import { obtenerParalelos } from '../../services/adminService'
 import { getApiData, getApiErrorMessage } from '../../services/api'
-import { obtenerMatrizAsistencia } from '../../services/matrizAsistenciaService'
+import {
+  obtenerMatrizAsistencia,
+  obtenerReporteTrimestralEstudiante,
+} from '../../services/matrizAsistenciaService'
 import { downloadMatrizAsistenciaExcel } from '../../utils/matrizExcel'
 import { Button, SearchableSelect, Spinner } from '../common'
 
@@ -30,6 +33,8 @@ export function MatrizAsistenciaAdmin() {
   const [error, setError] = useState('')
   const [isLoadingParalelos, setIsLoadingParalelos] = useState(true)
   const [isLoadingMatriz, setIsLoadingMatriz] = useState(false)
+  const [contextMenu, setContextMenu] = useState(null)
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
 
   const anioInicio = useMemo(() => getSchoolYearStart(), [])
 
@@ -89,6 +94,52 @@ export function MatrizAsistenciaAdmin() {
   useEffect(() => {
     loadMatriz()
   }, [loadMatriz])
+
+  useEffect(() => {
+    const closeMenu = () => setContextMenu(null)
+    window.addEventListener('click', closeMenu)
+    window.addEventListener('scroll', closeMenu, true)
+    return () => {
+      window.removeEventListener('click', closeMenu)
+      window.removeEventListener('scroll', closeMenu, true)
+    }
+  }, [])
+
+  const handleStudentContextMenu = useCallback((event, student) => {
+    event.preventDefault()
+    setContextMenu({
+      student,
+      x: event.clientX,
+      y: event.clientY,
+    })
+  }, [])
+
+  const handleGenerateStudentReport = useCallback(async () => {
+    if (!contextMenu?.student || !selectedParalelo) return
+
+    setError('')
+    setIsGeneratingReport(true)
+
+    try {
+      const response = await obtenerReporteTrimestralEstudiante({
+        idParalelo: selectedParalelo,
+        idEstudiante: contextMenu.student.id_estudiante,
+        anioInicio,
+      })
+      const report = getApiData(response)
+      const {
+        createStudentTrimesterReportPdf,
+        getStudentTrimesterReportFileName,
+      } = await import('../../utils/studentTrimesterReportPdf')
+      const doc = await createStudentTrimesterReportPdf(report)
+      doc.save(getStudentTrimesterReportFileName(report))
+      setContextMenu(null)
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError))
+    } finally {
+      setIsGeneratingReport(false)
+    }
+  }, [anioInicio, contextMenu, selectedParalelo])
 
   return (
     <section className="rounded-2xl border border-border/50 bg-card/80 shadow-sm">
@@ -161,13 +212,34 @@ export function MatrizAsistenciaAdmin() {
       {!isLoadingParalelos && !isLoadingMatriz && matriz ? (
         <>
           <AlertasSeguimiento estudiantes={estudiantesConAlerta} />
-          <MatrizTable matriz={matriz} />
+          <MatrizTable matriz={matriz} onStudentContextMenu={handleStudentContextMenu} />
         </>
       ) : null}
 
       {!isLoadingParalelos && !isLoadingMatriz && !matriz && !error ? (
         <div className="p-10 text-center text-sm text-muted-foreground">
           Seleccione un paralelo para generar la matriz.
+        </div>
+      ) : null}
+
+      {contextMenu ? (
+        <div
+          className="fixed z-50 min-w-64 rounded-xl border border-border bg-card p-1 shadow-xl"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleGenerateStudentReport}
+            disabled={isGeneratingReport}
+          >
+            <Download className="h-4 w-4 text-primary" />
+            {isGeneratingReport ? 'Generando reporte...' : 'Generar reporte trimestral'}
+          </button>
+          <p className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+            {contextMenu.student.nombre_estudiante}
+          </p>
         </div>
       ) : null}
     </section>
@@ -223,7 +295,7 @@ function AlertasSeguimiento({ estudiantes }) {
   )
 }
 
-function MatrizTable({ matriz }) {
+function MatrizTable({ matriz, onStudentContextMenu }) {
   const monthGroups = useMemo(() => {
     const groups = []
 
@@ -316,7 +388,14 @@ function MatrizTable({ matriz }) {
                   {student.numero}
                 </td>
                 <td className="sticky left-14 z-20 max-w-72 border border-border bg-inherit px-3 py-2 font-medium text-foreground">
-                  {student.nombre_estudiante}
+                  <button
+                    type="button"
+                    className="text-left hover:text-primary hover:underline"
+                    onContextMenu={(event) => onStudentContextMenu(event, student)}
+                    title="Clic derecho para opciones del estudiante"
+                  >
+                    {student.nombre_estudiante}
+                  </button>
                 </td>
                 {matriz.dias.map((dia) => {
                   const status = student.estados_por_fecha?.[dia.fecha] ?? ''

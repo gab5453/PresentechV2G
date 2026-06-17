@@ -8,5 +8,11 @@ namespace Presentech.Business.Interfaces
             int idParalelo,
             int? anioInicio,
             CancellationToken cancellationToken = default);
+
+        Task<ReporteTrimestralEstudianteResponse> GenerarReporteTrimestralEstudianteAsync(
+            int idParalelo,
+            int idEstudiante,
+            int? anioInicio,
+            CancellationToken cancellationToken = default);
     }
 }
