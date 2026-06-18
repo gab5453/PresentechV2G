@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore; 
+using Presentech.DataAccess.Context; 
 using Presentech.Api.Extensions;
 using Presentech.Api.Middleware;
 
@@ -13,6 +15,13 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddCustomSwagger();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PresentechDbContext>();
+    db.Database.Migrate(); // Esto lee tus modelos y crea las tablas en PostgreSQL
+}
+
 
 if (app.Environment.IsDevelopment())
 {
