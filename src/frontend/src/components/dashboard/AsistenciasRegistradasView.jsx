@@ -36,8 +36,7 @@ export function AsistenciasRegistradasView({ role }) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingProfesores, setIsLoadingProfesores] = useState(false)
-  const [contextMenu, setContextMenu] = useState(null)
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
+  const [generatingReportId, setGeneratingReportId] = useState(null)
 
   const profesorOptions = useMemo(
     () => [
@@ -102,31 +101,9 @@ export function AsistenciasRegistradasView({ role }) {
     loadRegistros()
   }, [loadRegistros])
 
-  useEffect(() => {
-    const closeMenu = () => setContextMenu(null)
-    window.addEventListener('click', closeMenu)
-    window.addEventListener('scroll', closeMenu, true)
-    return () => {
-      window.removeEventListener('click', closeMenu)
-      window.removeEventListener('scroll', closeMenu, true)
-    }
-  }, [])
-
-  const handleRegistroContextMenu = useCallback((event, registro) => {
-    event.preventDefault()
-    setContextMenu({
-      registro,
-      x: event.clientX,
-      y: event.clientY,
-    })
-  }, [])
-
-  const handleGenerateReport = useCallback(async () => {
-    if (!contextMenu?.registro) return
-
-    const { registro } = contextMenu
+  const handleGenerateReport = useCallback(async (registro) => {
     setError('')
-    setIsGeneratingReport(true)
+    setGeneratingReportId(registro.id_registro)
 
     try {
       const response = await generarReporteAsistencia({
@@ -138,13 +115,12 @@ export function AsistenciasRegistradasView({ role }) {
       const { createReportPdf, getReportFileName } = await import('../../utils/reportPdf')
       const doc = await createReportPdf(report)
       doc.save(getReportFileName(report))
-      setContextMenu(null)
     } catch (requestError) {
       setError(getApiErrorMessage(requestError))
     } finally {
-      setIsGeneratingReport(false)
+      setGeneratingReportId(null)
     }
-  }, [contextMenu])
+  }, [])
 
   return (
     <section className="space-y-5">
@@ -237,16 +213,12 @@ export function AsistenciasRegistradasView({ role }) {
                   <th className="px-4 py-3 text-center font-semibold">Atrasados</th>
                   <th className="px-4 py-3 text-center font-semibold">Total</th>
                   <th className="px-4 py-3 font-semibold">Registrado</th>
+                  <th className="px-4 py-3 text-center font-semibold">Generar Reporte</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {registros.map((registro) => (
-                  <tr
-                    key={registro.id_registro}
-                    className="cursor-context-menu hover:bg-muted/40"
-                    onContextMenu={(event) => handleRegistroContextMenu(event, registro)}
-                    title="Clic derecho para generar reporte PDF"
-                  >
+                  <tr key={registro.id_registro} className="hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium text-foreground">
                       {registro.hora_inicio}-{registro.hora_fin}
                     </td>
@@ -268,6 +240,15 @@ export function AsistenciasRegistradasView({ role }) {
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDateTime(registro.created_at)}
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleGenerateReport(registro)}
+                        isLoading={generatingReportId === registro.id_registro}
+                      >
+                        Generar PDF
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -286,26 +267,6 @@ export function AsistenciasRegistradasView({ role }) {
         ) : null}
       </div>
 
-      {contextMenu ? (
-        <div
-          className="fixed z-50 min-w-72 rounded-xl border border-border bg-card p-1 shadow-xl"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <button
-            type="button"
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={handleGenerateReport}
-            disabled={isGeneratingReport}
-          >
-            <CalendarCheck className="h-4 w-4 text-primary" />
-            {isGeneratingReport ? 'Generando reporte...' : 'Generar reporte PDF'}
-          </button>
-          <p className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
-            {contextMenu.registro.materia} - {contextMenu.registro.paralelo}
-          </p>
-        </div>
-      ) : null}
     </section>
   )
 }
