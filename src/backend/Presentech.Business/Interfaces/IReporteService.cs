@@ -9,7 +9,7 @@ namespace Presentech.Business.Interfaces
             DateOnly fechaInicio,
             DateOnly fechaFin,
             int? idEstudiante,
-            int idProfesor,
+            int? idProfesor,
             CancellationToken cancellationToken = default);
     }
 }

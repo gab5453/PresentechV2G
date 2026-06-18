@@ -3,6 +3,7 @@ import { CalendarCheck, RefreshCw, Search } from 'lucide-react'
 import { obtenerProfesores } from '../../services/adminService'
 import { getApiData, getApiErrorMessage } from '../../services/api'
 import { obtenerAsistenciasRegistradas } from '../../services/dashboardService'
+import { generarReporteAsistencia } from '../../services/reportesService'
 import { Button, SearchableSelect, Spinner } from '../common'
 
 function toDateInputValue(date = new Date()) {
@@ -35,6 +36,8 @@ export function AsistenciasRegistradasView({ role }) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingProfesores, setIsLoadingProfesores] = useState(false)
+  const [contextMenu, setContextMenu] = useState(null)
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
 
   const profesorOptions = useMemo(
     () => [
@@ -98,6 +101,50 @@ export function AsistenciasRegistradasView({ role }) {
   useEffect(() => {
     loadRegistros()
   }, [loadRegistros])
+
+  useEffect(() => {
+    const closeMenu = () => setContextMenu(null)
+    window.addEventListener('click', closeMenu)
+    window.addEventListener('scroll', closeMenu, true)
+    return () => {
+      window.removeEventListener('click', closeMenu)
+      window.removeEventListener('scroll', closeMenu, true)
+    }
+  }, [])
+
+  const handleRegistroContextMenu = useCallback((event, registro) => {
+    event.preventDefault()
+    setContextMenu({
+      registro,
+      x: event.clientX,
+      y: event.clientY,
+    })
+  }, [])
+
+  const handleGenerateReport = useCallback(async () => {
+    if (!contextMenu?.registro) return
+
+    const { registro } = contextMenu
+    setError('')
+    setIsGeneratingReport(true)
+
+    try {
+      const response = await generarReporteAsistencia({
+        idClase: registro.id_clase,
+        fechaInicio: registro.fecha,
+        fechaFin: registro.fecha,
+      })
+      const report = getApiData(response)
+      const { createReportPdf, getReportFileName } = await import('../../utils/reportPdf')
+      const doc = await createReportPdf(report)
+      doc.save(getReportFileName(report))
+      setContextMenu(null)
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError))
+    } finally {
+      setIsGeneratingReport(false)
+    }
+  }, [contextMenu])
 
   return (
     <section className="space-y-5">
@@ -194,7 +241,12 @@ export function AsistenciasRegistradasView({ role }) {
               </thead>
               <tbody className="divide-y divide-border">
                 {registros.map((registro) => (
-                  <tr key={registro.id_registro} className="hover:bg-muted/40">
+                  <tr
+                    key={registro.id_registro}
+                    className="cursor-context-menu hover:bg-muted/40"
+                    onContextMenu={(event) => handleRegistroContextMenu(event, registro)}
+                    title="Clic derecho para generar reporte PDF"
+                  >
                     <td className="px-4 py-3 font-medium text-foreground">
                       {registro.hora_inicio}-{registro.hora_fin}
                     </td>
@@ -233,6 +285,27 @@ export function AsistenciasRegistradasView({ role }) {
           </div>
         ) : null}
       </div>
+
+      {contextMenu ? (
+        <div
+          className="fixed z-50 min-w-72 rounded-xl border border-border bg-card p-1 shadow-xl"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport}
+          >
+            <CalendarCheck className="h-4 w-4 text-primary" />
+            {isGeneratingReport ? 'Generando reporte...' : 'Generar reporte PDF'}
+          </button>
+          <p className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+            {contextMenu.registro.materia} - {contextMenu.registro.paralelo}
+          </p>
+        </div>
+      ) : null}
     </section>
   )
 }

@@ -22,7 +22,7 @@ namespace Presentech.Business.Services
             DateOnly fechaInicio,
             DateOnly fechaFin,
             int? idEstudiante,
-            int idProfesor,
+            int? idProfesor,
             CancellationToken cancellationToken = default)
         {
             if (fechaInicio > fechaFin)
@@ -38,7 +38,7 @@ namespace Presentech.Business.Services
                     cancellationToken)
                 ?? throw new NotFoundException("Clase", idClase);
 
-            if (clase.id_profesor != idProfesor)
+            if (idProfesor.HasValue && clase.id_profesor != idProfesor.Value)
                 throw new UnauthorizedBusinessException("No tiene permisos para generar reportes de esta clase.");
 
             var estudiantesQuery = _unitOfWork.EstudianteRepository.GetAll()

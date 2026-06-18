@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Presentech.Api.Models.Common;
 using Presentech.Business.DTOs.Reporte;
 using Presentech.Business.Interfaces;
@@ -32,12 +33,15 @@ public class ReportesController : PresentechBaseController
         [FromQuery] int? idEstudiante,
         CancellationToken cancellationToken)
     {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        int? idProfesor = role == "admin" ? null : IdProfesor;
+
         var result = await _reporteService.GenerarAsistenciaAsync(
             idClase,
             fechaInicio,
             fechaFin,
             idEstudiante,
-            IdProfesor,
+            idProfesor,
             cancellationToken);
 
         return Ok(ApiResponse<ReporteAsistenciaResponse>.Ok(result, "Reporte generado exitosamente."));

@@ -117,6 +117,7 @@ namespace Presentech.Business.Services
                 .GroupBy(a => new
                 {
                     a.id_registro,
+                    a.RegistroAsistencia.ClaseHorario.id_clase,
                     a.RegistroAsistencia.fecha,
                     a.RegistroAsistencia.created_at,
                     a.RegistroAsistencia.ClaseHorario.hora_inicio,
@@ -131,6 +132,7 @@ namespace Presentech.Business.Services
                 .Select(g => new
                 {
                     g.Key.id_registro,
+                    g.Key.id_clase,
                     g.Key.fecha,
                     g.Key.created_at,
                     g.Key.id_profesor,
@@ -154,6 +156,7 @@ namespace Presentech.Business.Services
                 .Select(r => new AsistenciaRegistradaResponse
                 {
                     id_registro = r.id_registro,
+                    id_clase = r.id_clase,
                     fecha = r.fecha,
                     created_at = r.created_at,
                     id_profesor = r.id_profesor,
