@@ -4,8 +4,9 @@ using Presentech.Business.Interfaces;
 
 namespace Presentech.Api.Controllers
 {
+    [ApiVersion("1.0")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CalificacionesController : ControllerBase
     {
         private readonly ICalificacionService _calificacionService;
