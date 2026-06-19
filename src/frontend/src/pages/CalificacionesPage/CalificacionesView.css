@@ -1,0 +1,203 @@
+.calificaciones-container {
+  padding: 20px;
+  background: #f4f6f8;
+  min-height: 100vh;
+}
+
+.calificaciones-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+}
+
+.btn-back {
+  background: transparent;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background: #e2e2e2;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 10px;
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.excel-table th, .excel-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.excel-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.excel-table .sticky-col {
+  position: sticky;
+  left: 0;
+  background-color: #f8f9fa;
+  z-index: 1;
+  text-align: left;
+  min-width: 150px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.act-type {
+  display: block;
+  font-size: 0.75em;
+  color: #666;
+  font-weight: normal;
+}
+
+.action-th {
+  min-width: 40px !important;
+  width: 40px;
+}
+
+.btn-add-column {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-add-column:hover {
+  background: #0056b3;
+}
+
+.nota-input {
+  width: 100%;
+  border: none;
+  text-align: center;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+}
+
+.nota-input:focus {
+  background: #eef5ff;
+}
+
+/* Chrome, Safari, Edge, Opera - hide spin buttons */
+.nota-input::-webkit-outer-spin-button,
+.nota-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.nota-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.row-alarm {
+  background-color: #fff0f0;
+}
+
+.icon-alarm {
+  margin-left: 8px;
+  font-size: 1.1em;
+}
+
+.promedio-cell {
+  font-weight: bold;
+}
+
+.promedio-low {
+  color: #dc3545;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-cancel, .btn-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #e2e2e2;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #d4d4d4;
+}
+
+.btn-confirm {
+  background: #007bff;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #0056b3;
+}

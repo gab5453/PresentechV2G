@@ -26,6 +26,8 @@ namespace Presentech.DataAccess.Context
         public DbSet<RegistroAsistenciaEntity> RegistrosAsistencia => Set<RegistroAsistenciaEntity>();
         public DbSet<AsistenciaEntity> Asistencias => Set<AsistenciaEntity>();
         public DbSet<OpinionRecomendacionEntity> OpinionesRecomendaciones => Set<OpinionRecomendacionEntity>();
+        public DbSet<ActividadEntity> Actividades => Set<ActividadEntity>();
+        public DbSet<CalificacionEntity> Calificaciones => Set<CalificacionEntity>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +43,8 @@ namespace Presentech.DataAccess.Context
             modelBuilder.ApplyConfiguration(new RegistroAsistenciaConfiguration());
             modelBuilder.ApplyConfiguration(new AsistenciaConfiguration());
             modelBuilder.ApplyConfiguration(new OpinionRecomendacionConfiguration());
+            modelBuilder.ApplyConfiguration(new ActividadConfiguration());
+            modelBuilder.ApplyConfiguration(new CalificacionConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }

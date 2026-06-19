@@ -3,6 +3,8 @@ using Presentech.Business.Interfaces;
 using Presentech.Business.Models;
 using Presentech.Business.Services;
 using Presentech.DataAccess.Context;
+using Presentech.DataAccess.Repositories;
+using Presentech.DataAccess.Repositories.Interfaces;
 using Presentech.DataManagement.Interfaces;
 using Presentech.DataManagement.Services;
 
@@ -43,7 +45,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAsistenciaDataService, AsistenciaDataService>();
         services.AddScoped<IAdministradorDataService, AdministradorDataService>();
         services.AddScoped<IMateriaDataService, MateriaDataService>();
-
+        services.AddScoped<IActividadRepository, ActividadRepository>();
+        services.AddScoped<ICalificacionRepository, CalificacionRepository>();
+        services.AddScoped<IEstudianteRepository, EstudianteRepository>();
+        services.AddScoped<ICalificacionService, CalificacionService>();
+        services.AddScoped<IClaseRepository, ClaseRepository>();
         // =========================
         // JWT SETTINGS (para AuthService)
         // =========================
@@ -84,6 +90,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOpinionService, OpinionService>();
         services.AddScoped<IMatrizAsistenciaService, MatrizAsistenciaService>();
         services.AddHttpClient<IOcrService, OcrService>();
+        
+        // Calificaciones
+        services.AddScoped<Presentech.DataAccess.Repositories.Interfaces.IActividadRepository, Presentech.DataAccess.Repositories.ActividadRepository>();
+        services.AddScoped<Presentech.DataAccess.Repositories.Interfaces.ICalificacionRepository, Presentech.DataAccess.Repositories.CalificacionRepository>();
+        services.AddScoped<ICalificacionService, CalificacionService>();
 
         return services;
     }

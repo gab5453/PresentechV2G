@@ -24,5 +24,6 @@ namespace Presentech.DataAccess.Entities
         // =========================
         public ICollection<ParaleloEstudianteEntity> ParaleloEstudiantes { get; set; } = new List<ParaleloEstudianteEntity>();
         public ICollection<AsistenciaEntity> Asistencias { get; set; } = new List<AsistenciaEntity>();
+        public ICollection<CalificacionEntity> Calificaciones { get; set; } = new List<CalificacionEntity>();
     }
 }

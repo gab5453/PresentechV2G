@@ -32,5 +32,6 @@ namespace Presentech.DataAccess.Entities
         public ParaleloEntity Paralelo { get; set; } = null!;
         public MateriaEntity Materia { get; set; } = null!;
         public ICollection<ClaseHorarioEntity> ClasesHorario { get; set; } = new List<ClaseHorarioEntity>();
+        public ICollection<ActividadEntity> Actividades { get; set; } = new List<ActividadEntity>();
     }
 }

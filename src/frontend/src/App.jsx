@@ -9,6 +9,7 @@ import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
 import { AdminRoute } from './routes/AdminRoute.jsx'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { AdminPage } from './pages/AdminPage'
+import CalificacionesView from './pages/CalificacionesPage/CalificacionesView'
 
 function App() {
   return (
@@ -55,6 +56,14 @@ function App() {
         element={
           <ProtectedRoute>
             <CalendarioPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clases/:idClase/calificaciones"
+        element={
+          <ProtectedRoute>
+            <CalificacionesView />
           </ProtectedRoute>
         }
       />
