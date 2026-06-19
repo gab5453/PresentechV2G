@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Presentech.DataAccess.Context;
@@ -11,9 +12,11 @@ using Presentech.DataAccess.Context;
 namespace Presentech.DataAccess.Migrations
 {
     [DbContext(typeof(PresentechDbContext))]
-    partial class PresentechDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619034044_SeedDiasSemana")]
+    partial class SeedDiasSemana
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
