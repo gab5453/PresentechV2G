@@ -31,6 +31,10 @@ export function AsistenciaPage() {
     registroExistente,
     setAsistencias,
     setObservacionesSesion,
+    fechaFormateada,
+    irSemanaAnterior,
+    irSemanaSiguiente,
+    irHoy
   } = useAsistencia(idHorario, fecha)
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -77,7 +81,7 @@ export function AsistenciaPage() {
 
     const payload = {
       asistencias,
-      fecha,
+      fecha: fechaFormateada,
       id_horario: Number(idHorario),
       observaciones_sesion: observacionesSesion || null,
     }
@@ -116,7 +120,7 @@ export function AsistenciaPage() {
             </Link>
           </Button>
 
-          <div className="space-y-1">
+          <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-medium text-foreground">
                 {clase ? clase.materia : 'Asistencia'}
@@ -132,7 +136,39 @@ export function AsistenciaPage() {
                 </span>
               ) : null}
             </div>
-            <p className="text-sm text-muted-foreground">{fecha}</p>
+            
+            {/* Control de Navegación de Tiempo */}
+            <div className="flex items-center gap-4 bg-card/60 backdrop-blur-sm p-3 rounded-lg border border-border/50 inline-flex shadow-sm">
+              <button 
+                onClick={irSemanaAnterior}
+                className="p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                title="Semana anterior"
+              >
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+              
+              <div className="flex flex-col items-center min-w-[120px]">
+                <span className="text-xs text-muted-foreground font-medium mb-1 uppercase tracking-wider">Fecha de registro</span>
+                <span className="text-sm font-semibold text-foreground">{fechaFormateada}</span>
+              </div>
+
+              <button 
+                onClick={irSemanaSiguiente}
+                className="p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                title="Semana siguiente"
+              >
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
+              
+              <div className="w-px h-8 bg-border/50 mx-2"></div>
+              
+              <button 
+                onClick={irHoy}
+                className="text-xs font-medium text-primary hover:bg-primary/10 px-3 py-1.5 rounded-md transition-colors"
+              >
+                Hoy
+              </button>
+            </div>
           </div>
         </div>
 

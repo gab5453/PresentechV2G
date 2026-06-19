@@ -22,7 +22,16 @@ function createDefaultAttendance(estudiantes) {
   }))
 }
 
-export function useAsistencia(idHorario, fecha) {
+export function useAsistencia(idHorario, initialFechaStr) {
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
+    if (initialFechaStr) {
+      // Evitar problemas de zona horaria parseando la fecha localmente
+      const [year, month, day] = initialFechaStr.split('-');
+      return new Date(year, month - 1, day);
+    }
+    return new Date();
+  });
+
   const [asistencias, setAsistencias] = useState([])
   const [clase, setClase] = useState(null)
   const [error, setError] = useState('')
@@ -30,10 +39,34 @@ export function useAsistencia(idHorario, fecha) {
   const [observacionesSesion, setObservacionesSesion] = useState('')
   const [registroExistente, setRegistroExistente] = useState(null)
 
+  const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+
+  const irSemanaAnterior = () => {
+    setFechaSeleccionada(prev => {
+      const nueva = new Date(prev);
+      nueva.setDate(nueva.getDate() - 7);
+      return nueva;
+    });
+  };
+
+  const irSemanaSiguiente = () => {
+    setFechaSeleccionada(prev => {
+      const nueva = new Date(prev);
+      nueva.setDate(nueva.getDate() + 7);
+      return nueva;
+    });
+  };
+
+  const irHoy = () => {
+    setFechaSeleccionada(new Date());
+  };
+
   useEffect(() => {
     let isActive = true
 
     async function loadAsistencia() {
+      setIsLoading(true);
+      setError('');
       try {
         const clasesResponse = await obtenerMisClases()
         const clases = getApiData(clasesResponse) ?? []
@@ -47,7 +80,7 @@ export function useAsistencia(idHorario, fecha) {
 
         const [estudiantesResponse, registroResponse] = await Promise.all([
           obtenerEstudiantesClase(selectedClase.id_clase),
-          obtenerRegistroAsistencia(idHorario, fecha),
+          obtenerRegistroAsistencia(idHorario, fechaFormateada),
         ])
 
         if (!isActive) return
@@ -77,7 +110,7 @@ export function useAsistencia(idHorario, fecha) {
     return () => {
       isActive = false
     }
-  }, [fecha, idHorario])
+  }, [fechaFormateada, idHorario])
 
   return {
     asistencias,
@@ -89,5 +122,11 @@ export function useAsistencia(idHorario, fecha) {
     registroExistente,
     setAsistencias,
     setObservacionesSesion,
+    fechaSeleccionada,
+    fechaFormateada,
+    setFechaSeleccionada,
+    irSemanaAnterior,
+    irSemanaSiguiente,
+    irHoy
   }
 }
