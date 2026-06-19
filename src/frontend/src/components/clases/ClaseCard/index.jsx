@@ -1,4 +1,4 @@
-import { Calendar, Clock } from 'lucide-react'
+import { Calendar, Clock, Table } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../common'
 import { formatHorario, formatTime, getProximaClase } from '../../../utils/claseUtils'
@@ -46,7 +46,13 @@ export function ClaseCard({ clase }) {
         <Button asChild className="w-full min-h-9 text-sm">
           <Link to={`/clases/${clase.id_clase}/calendario`}>
             <Calendar aria-hidden="true" className="h-4 w-4" />
-            Ver calendario
+            Ver asistencia
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" className="w-full min-h-9 text-sm">
+          <Link to={`/clases/${clase.id_clase}/calificaciones`}>
+            <Table aria-hidden="true" className="h-4 w-4" />
+            Calificaciones
           </Link>
         </Button>
       </div>

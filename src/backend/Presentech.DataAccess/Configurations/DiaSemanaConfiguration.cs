@@ -38,6 +38,19 @@ namespace Presentech.DataAccess.Configurations
             builder.HasIndex(d => d.orden)
                    .IsUnique()
                    .HasDatabaseName("UQ_DIAS_SEMANA_ORDEN");
+
+            // =========================
+            // DATA SEMILLA
+            // =========================
+            builder.HasData(
+                new DiaSemanaEntity { id_dia = 1, nombre = "Lunes", orden = 1 },
+                new DiaSemanaEntity { id_dia = 2, nombre = "Martes", orden = 2 },
+                new DiaSemanaEntity { id_dia = 3, nombre = "Miércoles", orden = 3 },
+                new DiaSemanaEntity { id_dia = 4, nombre = "Jueves", orden = 4 },
+                new DiaSemanaEntity { id_dia = 5, nombre = "Viernes", orden = 5 },
+                new DiaSemanaEntity { id_dia = 6, nombre = "Sábado", orden = 6 },
+                new DiaSemanaEntity { id_dia = 7, nombre = "Domingo", orden = 7 }
+            );
         }
     }
 }
