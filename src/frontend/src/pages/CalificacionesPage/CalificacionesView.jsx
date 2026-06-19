@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCalificaciones } from '../../hooks/useCalificaciones';
-import './CalificacionesView.css';
+import { AppLayout } from '../../components/layout';
+import { Button, Spinner, Modal } from '../../components/common';
 
 const CalificacionesView = () => {
   const { idClase } = useParams();
@@ -11,6 +12,7 @@ const CalificacionesView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityType, setNewActivityType] = useState('Deber');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchMatriz();
@@ -19,11 +21,13 @@ const CalificacionesView = () => {
   const handleCreateActivity = async () => {
     if (!newActivityName.trim()) return;
     
+    setIsSubmitting(true);
     const result = await crearActividad({
       nombre: newActivityName,
       tipo: newActivityType,
       fecha: new Date().toISOString()
     });
+    setIsSubmitting(false);
 
     if (result.success) {
       setIsModalOpen(false);
@@ -35,7 +39,7 @@ const CalificacionesView = () => {
 
   const handleNotaBlur = async (actividadId, estudianteId, e) => {
     const value = e.target.value;
-    if (value === '') return; // O se podría enviar null para borrar
+    if (value === '') return;
     
     const notaNum = parseFloat(value);
     if (isNaN(notaNum) || notaNum < 0 || notaNum > 10) {
@@ -49,84 +53,155 @@ const CalificacionesView = () => {
     }
   };
 
-  if (loading) return <div className="loading">Cargando calificaciones...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
-  if (!matriz) return null;
-
   return (
-    <div className="calificaciones-container">
-      <div className="calificaciones-header">
-        <button className="btn-back" onClick={() => navigate(-1)}>← Volver</button>
-        <h2>Calificaciones de la Clase</h2>
-      </div>
+    <AppLayout title="Calificaciones">
+      <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6">
+        <div className="mb-6">
+          <Button asChild className="mb-3 -ml-2 min-h-9 px-2" variant="ghost">
+            <Link to="/clases">
+              <i className="fa-solid fa-chevron-left h-4 w-4 mr-1 flex items-center"></i>
+              Volver
+            </Link>
+          </Button>
 
-      <div className="table-wrapper">
-        <table className="excel-table">
-          <thead>
-            <tr>
-              <th className="sticky-col">Estudiante</th>
-              {matriz.actividades.map(act => (
-                <th key={act.id}>
-                  {act.nombre}
-                  <span className="act-type">({act.tipo})</span>
-                </th>
-              ))}
-              <th className="action-th">
-                <button className="btn-add-column" onClick={() => setIsModalOpen(true)}>+</button>
-              </th>
-              <th>Promedio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {matriz.estudiantes.map(est => (
-              <tr key={est.estudianteId} className={est.requiereAlarma ? 'row-alarm' : ''}>
-                <td className="sticky-col">
-                  {est.apellidos} {est.nombres}
-                  {est.requiereAlarma && <span className="icon-alarm" title="Bajo rendimiento">⚠️</span>}
-                </td>
-                
-                {matriz.actividades.map(act => {
-                  const currentNota = est.notas[act.id];
-                  return (
-                    <td key={act.id}>
-                      <input 
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        defaultValue={currentNota !== null ? currentNota : ''}
-                        onBlur={(e) => handleNotaBlur(act.id, est.estudianteId, e)}
-                        className="nota-input"
-                      />
-                    </td>
-                  );
-                })}
-                <td></td> {/* Celda vacía bajo el botón de + */}
-                <td className={`promedio-cell ${est.requiereAlarma ? 'promedio-low' : ''}`}>
-                  {est.promedio !== null ? est.promedio.toFixed(2) : '-'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-medium text-foreground">
+                {matriz ? matriz.materia : 'Calificaciones'}
+              </h2>
+              {matriz ? (
+                <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                  {matriz.paralelo}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        </div>
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Nueva Actividad</h3>
-            <div className="form-group">
-              <label>Nombre</label>
-              <input 
-                type="text" 
+        {error ? (
+          <p className="mb-4 rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
+            {error}
+          </p>
+        ) : null}
+
+        {loading && !matriz ? (
+          <div className="flex min-h-64 items-center justify-center rounded-lg rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm shadow-sm transition-all duration-300">
+            <Spinner size="lg" />
+          </div>
+        ) : null}
+
+        {!loading && matriz && matriz.estudiantes.length === 0 ? (
+          <div className="rounded-lg rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm shadow-sm transition-all duration-300 p-5 text-center shadow-sm">
+            <h2 className="text-lg font-medium text-foreground">
+              No hay estudiantes activos
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Asegúrate de que la clase tenga estudiantes matriculados.
+            </p>
+          </div>
+        ) : null}
+
+        {matriz && matriz.estudiantes.length > 0 && (
+          <div className="rounded-lg rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm shadow-sm transition-all duration-300 p-4 md:p-6 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse min-w-max">
+                <thead>
+                  <tr className="border-b border-border/50 text-muted-foreground font-medium bg-secondary/20">
+                    <th className="sticky left-0 bg-card/95 backdrop-blur-sm z-10 px-4 py-3 font-semibold text-foreground min-w-[200px] border-r border-border/50">
+                      Estudiante
+                    </th>
+                    {matriz.actividades.map(act => (
+                      <th key={act.id} className="px-3 py-3 text-center border-r border-border/50 min-w-[100px]">
+                        <div className="font-semibold text-foreground">{act.nombre}</div>
+                        <div className="text-[0.7rem] font-normal text-muted-foreground">{act.tipo}</div>
+                      </th>
+                    ))}
+                    <th className="px-3 py-3 text-center border-r border-border/50 min-w-[60px]">
+                      <button 
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        onClick={() => setIsModalOpen(true)}
+                        title="Agregar Actividad"
+                      >
+                        <i className="fa-solid fa-plus text-xs"></i>
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-center font-semibold text-foreground">
+                      Promedio
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {matriz.estudiantes.map(est => (
+                    <tr 
+                      key={est.estudianteId} 
+                      className={`hover:bg-secondary/10 transition-colors ${est.requiereAlarma ? 'bg-error/5' : ''}`}
+                    >
+                      <td className={`sticky left-0 bg-card/95 backdrop-blur-sm z-10 px-4 py-3 font-medium text-foreground border-r border-border/50 flex items-center justify-between ${est.requiereAlarma ? 'bg-error/5' : ''}`}>
+                        <span className="truncate max-w-[180px]">{est.apellidos} {est.nombres}</span>
+                        {est.requiereAlarma && (
+                          <i className="fa-solid fa-triangle-exclamation text-error ml-2" title="Rendimiento bajo"></i>
+                        )}
+                      </td>
+                      
+                      {matriz.actividades.map(act => {
+                        const currentNota = est.notas[act.id];
+                        return (
+                          <td key={act.id} className="px-2 py-2 border-r border-border/50 transition-colors focus-within:bg-secondary/30">
+                            <input 
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.1"
+                              defaultValue={currentNota !== null ? currentNota : ''}
+                              onBlur={(e) => handleNotaBlur(act.id, est.estudianteId, e)}
+                              className="bg-transparent w-full outline-none text-center font-medium placeholder-muted-foreground/30 focus:text-primary"
+                              placeholder="-"
+                            />
+                          </td>
+                        );
+                      })}
+                      <td className="px-2 py-2 border-r border-border/50 text-center"></td> {/* Placeholder under + button */}
+                      <td className={`px-4 py-3 text-center font-bold ${est.requiereAlarma ? 'text-error' : 'text-foreground'}`}>
+                        {est.promedio !== null ? est.promedio.toFixed(2) : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleCreateActivity}
+          title="Nueva Actividad"
+          confirmLabel="Crear Actividad"
+          isSubmitting={isSubmitting}
+        >
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Nombre de la actividad
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 value={newActivityName}
-                onChange={e => setNewActivityName(e.target.value)}
+                onChange={(e) => setNewActivityName(e.target.value)}
                 placeholder="Ej. Lección 1"
               />
             </div>
-            <div className="form-group">
-              <label>Tipo</label>
-              <select value={newActivityType} onChange={e => setNewActivityType(e.target.value)}>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Tipo
+              </label>
+              <select
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                value={newActivityType}
+                onChange={(e) => setNewActivityType(e.target.value)}
+              >
                 <option value="Deber">Deber</option>
                 <option value="Taller">Taller</option>
                 <option value="Leccion">Lección</option>
@@ -134,14 +209,10 @@ const CalificacionesView = () => {
                 <option value="Examen">Examen</option>
               </select>
             </div>
-            <div className="modal-actions">
-              <button onClick={() => setIsModalOpen(false)} className="btn-cancel">Cancelar</button>
-              <button onClick={handleCreateActivity} className="btn-confirm">Crear</button>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+      </section>
+    </AppLayout>
   );
 };
 

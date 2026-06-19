@@ -83,11 +83,16 @@ namespace Presentech.Business.Services
 
         public async Task<MatrizCalificacionesResponse> GetMatrizCalificacionesAsync(int claseId)
         {
-            var clase = await _claseRepository.ObtenerPorIdAsync(claseId);
+            var clase = await _claseRepository.ObtenerConHorarioAsync(claseId);
             if (clase == null)
                 throw new NotFoundException("Clase", claseId);
 
-            var response = new MatrizCalificacionesResponse { ClaseId = claseId };
+            var response = new MatrizCalificacionesResponse 
+            { 
+                ClaseId = claseId,
+                Materia = clase.Materia?.Nombre ?? "Materia desconocida",
+                Paralelo = clase.Paralelo?.nombre ?? "Paralelo desconocido"
+            };
 
             // 1. Obtener todas las actividades de la clase
             var actividades = await _actividadRepository.GetByClaseIdAsync(claseId);

@@ -3,6 +3,8 @@ namespace Presentech.Business.DTOs.Calificaciones
     public class MatrizCalificacionesResponse
     {
         public int ClaseId { get; set; }
+        public string Materia { get; set; } = null!;
+        public string Paralelo { get; set; } = null!;
         public List<ActividadDto> Actividades { get; set; } = new List<ActividadDto>();
         public List<EstudianteCalificacionesDto> Estudiantes { get; set; } = new List<EstudianteCalificacionesDto>();
     }
