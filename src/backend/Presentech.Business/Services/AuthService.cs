@@ -78,6 +78,7 @@ namespace Presentech.Business.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, identificador),
+                new Claim("id_profesor", id.ToString()),
                 new Claim("id_usuario", id.ToString()),
                 new Claim(ClaimTypes.Role, rol)
             };
