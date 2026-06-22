@@ -56,6 +56,8 @@ namespace Presentech.DataAccess.Repositories
                 .Include(c => c.Paralelo)
                 .Include(c => c.Materia)
                 .Include(c => c.Profesor)
+                .Include(c => c.ClasesHorario)
+                    .ThenInclude(ch => ch.DiaSemana)
                 .Where(c => c.activo && idsParalelos.Contains(c.id_paralelo))
                 .OrderBy(c => c.Materia.Nombre)
                 .ToListAsync(cancellationToken);

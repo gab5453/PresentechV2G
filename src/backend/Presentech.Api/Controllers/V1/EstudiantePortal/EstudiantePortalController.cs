@@ -23,8 +23,7 @@ public class EstudiantePortalController : ControllerBase
 
     private int GetEstudianteId()
     {
-        var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                      ?? User.FindFirst("id_usuario")?.Value;
+        var idClaim = User.FindFirst("id_usuario")?.Value ?? User.FindFirst("id_profesor")?.Value;
         if (int.TryParse(idClaim, out int id))
             return id;
         throw new UnauthorizedAccessException("Token inválido o sin identificación de estudiante.");
