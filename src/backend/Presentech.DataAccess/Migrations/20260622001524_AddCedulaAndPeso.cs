@@ -18,6 +18,8 @@ namespace Presentech.DataAccess.Migrations
                 nullable: false,
                 defaultValue: "");
 
+            migrationBuilder.Sql("UPDATE estudiantes SET \"Cedula\" = gen_random_uuid()::text;");
+
             migrationBuilder.AddColumn<decimal>(
                 name: "peso",
                 table: "actividades",
