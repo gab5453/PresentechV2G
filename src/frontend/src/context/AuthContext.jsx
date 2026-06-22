@@ -51,8 +51,8 @@ export function AuthProvider({ children }) {
     return response
   }, [])
 
-  const loginStudent = useCallback(async (credentials) => {
-    const response = await loginStudentRequest(credentials)
+  const loginStudent = useCallback(async (cedula) => {
+    const response = await loginStudentRequest(cedula)
     const data = getApiData(response)
 
     if (!data?.token) {

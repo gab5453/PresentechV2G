@@ -50,14 +50,13 @@ namespace Presentech.Business.Services
 
         public async Task<LoginResponse> LoginEstudianteAsync(LoginStudentRequest request, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(request.Cedula) || string.IsNullOrWhiteSpace(request.Contrasena))
-                throw new ValidationException(new[] { new FluentValidation.Results.ValidationFailure("Cedula", "Cédula y contraseña son requeridas.") });
+            if (string.IsNullOrWhiteSpace(request.Cedula))
+                throw new ValidationException(new[] { new FluentValidation.Results.ValidationFailure("Cedula", "La cédula es requerida.") });
 
             var estudiante = await _estudianteDataService.ObtenerPorCedulaAsync(request.Cedula, cancellationToken);
 
-            // MVP: Usamos la cédula como contraseña
-            if (estudiante is null || !estudiante.activo || request.Contrasena != estudiante.Cedula)
-                throw new UnauthorizedBusinessException("Cédula o contraseña incorrectas.");
+            if (estudiante is null || !estudiante.activo)
+                throw new UnauthorizedBusinessException("Cédula incorrecta o estudiante inactivo.");
 
             return new LoginResponse
             {

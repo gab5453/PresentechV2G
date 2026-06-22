@@ -10,7 +10,6 @@ export function StudentLoginPage() {
   const { isAuthenticated, loginStudent } = useAuth()
   const [credentials, setCredentials] = useState({
     cedula: '',
-    contrasena: '',
   })
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -25,7 +24,7 @@ export function StudentLoginPage() {
     setIsSubmitting(true)
 
     try {
-      await loginStudent(credentials)
+      await loginStudent(credentials.cedula)
       navigate('/estudiante/dashboard', { replace: true })
     } catch (requestError) {
       setError(getApiErrorMessage(requestError))
@@ -79,19 +78,6 @@ export function StudentLoginPage() {
                 setCredentials((current) => ({
                   ...current,
                   cedula: value,
-                }))
-              }
-            />
-
-            <Input
-              label="Contraseña"
-              type="password"
-              placeholder="Ingresa tu contraseña"
-              value={credentials.contrasena}
-              onChange={(value) =>
-                setCredentials((current) => ({
-                  ...current,
-                  contrasena: value,
                 }))
               }
             />
