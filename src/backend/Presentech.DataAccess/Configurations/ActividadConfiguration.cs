@@ -35,6 +35,10 @@ namespace Presentech.DataAccess.Configurations
 
             builder.Property(a => a.fecha);
 
+            builder.Property(a => a.peso)
+                   .IsRequired()
+                   .HasColumnType("decimal(5,2)");
+
             // =========================
             // ESTADO / CICLO DE VIDA
             // =========================

@@ -25,6 +25,14 @@ namespace Presentech.DataAccess.Configurations
             // =========================
             // DATOS PERSONALES
             // =========================
+            builder.Property(e => e.Cedula)
+                   .IsRequired()
+                   .HasMaxLength(20);
+
+            builder.HasIndex(e => e.Cedula)
+                   .IsUnique()
+                   .HasDatabaseName("IDX_ESTUDIANTES_CEDULA");
+
             builder.Property(e => e.nombres)
                    .IsRequired()
                    .HasMaxLength(100);

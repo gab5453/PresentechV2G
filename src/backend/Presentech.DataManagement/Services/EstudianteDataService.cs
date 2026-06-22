@@ -29,6 +29,12 @@ namespace Presentech.DataManagement.Services
             return entity is null ? null : EstudianteDataMapper.ToDataModel(entity);
         }
 
+        public async Task<EstudianteDataModel?> ObtenerPorCedulaAsync(string cedula, CancellationToken cancellationToken = default)
+        {
+            var entity = await _unitOfWork.EstudianteRepository.ObtenerPorCedulaAsync(cedula, cancellationToken);
+            return entity is null ? null : EstudianteDataMapper.ToDataModel(entity);
+        }
+
         public async Task<IReadOnlyList<EstudianteDataModel>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
         {
             var query = _unitOfWork.EstudianteRepository.GetAll();

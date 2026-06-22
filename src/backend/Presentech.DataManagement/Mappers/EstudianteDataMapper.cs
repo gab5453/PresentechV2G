@@ -14,6 +14,7 @@ namespace Presentech.DataManagement.Mappers
             return new EstudianteDataModel
             {
                 id_estudiante = entity.id_estudiante,
+                Cedula        = entity.Cedula,
                 nombres       = entity.nombres,
                 apellidos     = entity.apellidos,
                 activo        = entity.activo,
@@ -30,6 +31,7 @@ namespace Presentech.DataManagement.Mappers
             return new EstudianteEntity
             {
                 id_estudiante = model.id_estudiante,
+                Cedula        = model.Cedula,
                 nombres       = model.nombres,
                 apellidos     = model.apellidos,
                 activo        = model.activo,

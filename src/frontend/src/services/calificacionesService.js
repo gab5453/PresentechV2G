@@ -14,5 +14,15 @@ export const calificacionesService = {
   registrarNota: async (request) => {
     const response = await api.put('/calificaciones/nota', request);
     return response.data;
+  },
+
+  actualizarActividad: async (actividadId, request) => {
+    const response = await api.put(`/calificaciones/actividad/${actividadId}`, request);
+    return response.data;
+  },
+
+  eliminarActividad: async (actividadId) => {
+    const response = await api.delete(`/calificaciones/actividad/${actividadId}`);
+    return response.data;
   }
 };

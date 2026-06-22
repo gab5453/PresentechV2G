@@ -9,6 +9,7 @@ namespace Presentech.DataAccess.Repositories.Interfaces
         // =========================
         Task<IReadOnlyList<EstudianteEntity>> ObtenerPorParaleloAsync(int id_paralelo, CancellationToken cancellationToken = default);
         Task<EstudianteEntity?> ObtenerPorIdAsync(int id_estudiante, CancellationToken cancellationToken = default);
+        Task<EstudianteEntity?> ObtenerPorCedulaAsync(string cedula, CancellationToken cancellationToken = default);
         IQueryable<EstudianteEntity> GetAll();
 
         // =========================

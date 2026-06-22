@@ -31,6 +31,20 @@ namespace Presentech.Api.Controllers
             return Ok(actividad);
         }
 
+        [HttpPut("actividad/{id}")]
+        public async Task<IActionResult> EditarActividad(int id, [FromBody] CrearActividadRequest request)
+        {
+            var actividad = await _calificacionService.EditarActividadAsync(id, request);
+            return Ok(actividad);
+        }
+
+        [HttpDelete("actividad/{id}")]
+        public async Task<IActionResult> EliminarActividad(int id)
+        {
+            await _calificacionService.EliminarActividadAsync(id);
+            return NoContent();
+        }
+
         [HttpPut("nota")]
         public async Task<IActionResult> RegistrarNota([FromBody] RegistrarNotaRequest request)
         {

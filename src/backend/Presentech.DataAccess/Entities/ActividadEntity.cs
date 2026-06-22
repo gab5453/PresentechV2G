@@ -18,6 +18,7 @@ namespace Presentech.DataAccess.Entities
         public string nombre { get; set; } = null!;
         public string tipo { get; set; } = null!; // Deber, Taller, Leccion, Participacion, etc.
         public DateTime? fecha { get; set; }
+        public decimal peso { get; set; }
 
         // =========================
         // ESTADO / CICLO DE VIDA

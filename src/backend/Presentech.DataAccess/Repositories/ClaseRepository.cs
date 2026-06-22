@@ -44,6 +44,17 @@ namespace Presentech.DataAccess.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IReadOnlyList<ClaseEntity>> ObtenerPorEstudianteAsync(int id_estudiante, CancellationToken cancellationToken = default)
+        {
+            return await _context.Clases
+                .AsNoTracking()
+                .Include(c => c.Paralelo)
+                .Include(c => c.Materia)
+                .Where(c => c.activo && c.Paralelo.ParaleloEstudiantes.Any(pe => pe.id_estudiante == id_estudiante && pe.activo))
+                .OrderBy(c => c.Materia.Nombre)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<ClaseEntity?> ObtenerPorIdAsync(int id_clase, CancellationToken cancellationToken = default)
         {
             return await _context.Clases

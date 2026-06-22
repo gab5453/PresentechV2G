@@ -10,6 +10,10 @@ import { AdminRoute } from './routes/AdminRoute.jsx'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { AdminPage } from './pages/AdminPage'
 import CalificacionesView from './pages/CalificacionesPage/CalificacionesView'
+import { StudentLoginPage } from './pages/StudentLoginPage'
+import { StudentRoute } from './routes/StudentRoute.jsx'
+import { StudentDashboardView } from './pages/StudentDashboardPage'
+import { StudentClasesView } from './pages/StudentClasesPage'
 
 function App() {
   return (
@@ -91,6 +95,26 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Student Routes */}
+      <Route path="/estudiante/login" element={<StudentLoginPage />} />
+      <Route
+        path="/estudiante/dashboard"
+        element={
+          <StudentRoute>
+            <StudentDashboardView />
+          </StudentRoute>
+        }
+      />
+      <Route
+        path="/estudiante/clases/:idClase"
+        element={
+          <StudentRoute>
+            <StudentClasesView />
+          </StudentRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

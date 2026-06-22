@@ -10,6 +10,7 @@ namespace Presentech.DataAccess.Entities
         // =========================
         // DATOS PERSONALES
         // =========================
+        public string Cedula { get; set; } = null!;
         public string nombres { get; set; } = null!;
         public string apellidos { get; set; } = null!;
 

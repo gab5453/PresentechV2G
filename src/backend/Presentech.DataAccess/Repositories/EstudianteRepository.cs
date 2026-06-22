@@ -34,6 +34,13 @@ namespace Presentech.DataAccess.Repositories
                 .FirstOrDefaultAsync(e => e.id_estudiante == id_estudiante && e.activo, cancellationToken);
         }
 
+        public async Task<EstudianteEntity?> ObtenerPorCedulaAsync(string cedula, CancellationToken cancellationToken = default)
+        {
+            return await _context.Estudiantes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Cedula == cedula && e.activo, cancellationToken);
+        }
+
         public IQueryable<EstudianteEntity> GetAll()
         {
             return _context.Estudiantes

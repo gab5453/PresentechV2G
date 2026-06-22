@@ -7,12 +7,19 @@ import { Button, Spinner, Modal } from '../../components/common';
 const CalificacionesView = () => {
   const { idClase } = useParams();
   const navigate = useNavigate();
-  const { matriz, loading, error, fetchMatriz, crearActividad, registrarNota } = useCalificaciones(idClase);
+  const { matriz, loading, error, fetchMatriz, crearActividad, registrarNota, actualizarActividad, eliminarActividad } = useCalificaciones(idClase);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityType, setNewActivityType] = useState('Deber');
+  const [newActivityPeso, setNewActivityPeso] = useState(10);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editActivityId, setEditActivityId] = useState(null);
+  const [editActivityName, setEditActivityName] = useState('');
+  const [editActivityType, setEditActivityType] = useState('Deber');
+  const [editActivityPeso, setEditActivityPeso] = useState(10);
 
   useEffect(() => {
     fetchMatriz();
@@ -25,6 +32,7 @@ const CalificacionesView = () => {
     const result = await crearActividad({
       nombre: newActivityName,
       tipo: newActivityType,
+      peso: Number(newActivityPeso),
       fecha: new Date().toISOString()
     });
     setIsSubmitting(false);
@@ -32,7 +40,43 @@ const CalificacionesView = () => {
     if (result.success) {
       setIsModalOpen(false);
       setNewActivityName('');
+      setNewActivityPeso(10);
     } else {
+      alert(`Error: ${result.error}`);
+    }
+  };
+
+  const openEditModal = (act) => {
+    setEditActivityId(act.id);
+    setEditActivityName(act.nombre);
+    setEditActivityType(act.tipo);
+    setEditActivityPeso(act.peso || 10);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditActivity = async () => {
+    if (!editActivityName.trim() || !editActivityId) return;
+    
+    setIsSubmitting(true);
+    const result = await actualizarActividad(editActivityId, {
+      nombre: editActivityName,
+      tipo: editActivityType,
+      peso: Number(editActivityPeso)
+    });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setIsEditModalOpen(false);
+    } else {
+      alert(`Error: ${result.error}`);
+    }
+  };
+
+  const handleDeleteActivity = async (actId) => {
+    if (!window.confirm('¿Está seguro de eliminar esta actividad?')) return;
+    
+    const result = await eliminarActividad(actId);
+    if (!result.success) {
       alert(`Error: ${result.error}`);
     }
   };
@@ -111,9 +155,17 @@ const CalificacionesView = () => {
                       Estudiante
                     </th>
                     {matriz.actividades.map(act => (
-                      <th key={act.id} className="px-3 py-3 text-center border-r border-border/50 min-w-[100px]">
+                      <th key={act.id} className="px-3 py-3 text-center border-r border-border/50 min-w-[120px] group relative">
                         <div className="font-semibold text-foreground">{act.nombre}</div>
-                        <div className="text-[0.7rem] font-normal text-muted-foreground">{act.tipo}</div>
+                        <div className="text-[0.7rem] font-normal text-muted-foreground">{act.tipo} ({act.peso}%)</div>
+                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <button onClick={() => openEditModal(act)} className="text-muted-foreground hover:text-primary transition-colors">
+                            <i className="fa-solid fa-pen text-[0.6rem]"></i>
+                          </button>
+                          <button onClick={() => handleDeleteActivity(act.id)} className="text-muted-foreground hover:text-error transition-colors">
+                            <i className="fa-solid fa-trash text-[0.6rem]"></i>
+                          </button>
+                        </div>
                       </th>
                     ))}
                     <th className="px-3 py-3 text-center border-r border-border/50 min-w-[60px]">
@@ -208,6 +260,71 @@ const CalificacionesView = () => {
                 <option value="Participacion">Participación</option>
                 <option value="Examen">Examen</option>
               </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Peso (%)
+              </label>
+              <input
+                type="number"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                value={newActivityPeso}
+                onChange={(e) => setNewActivityPeso(e.target.value)}
+                min="1"
+                max="100"
+              />
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onConfirm={handleEditActivity}
+          title="Editar Actividad"
+          confirmLabel="Guardar Cambios"
+          isSubmitting={isSubmitting}
+        >
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Nombre de la actividad
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                value={editActivityName}
+                onChange={(e) => setEditActivityName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Tipo
+              </label>
+              <select
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                value={editActivityType}
+                onChange={(e) => setEditActivityType(e.target.value)}
+              >
+                <option value="Deber">Deber</option>
+                <option value="Taller">Taller</option>
+                <option value="Leccion">Lección</option>
+                <option value="Participacion">Participación</option>
+                <option value="Examen">Examen</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">
+                Peso (%)
+              </label>
+              <input
+                type="number"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                value={editActivityPeso}
+                onChange={(e) => setEditActivityPeso(e.target.value)}
+                min="1"
+                max="100"
+              />
             </div>
           </div>
         </Modal>

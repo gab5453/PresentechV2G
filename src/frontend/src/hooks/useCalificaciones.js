@@ -42,12 +42,34 @@ export const useCalificaciones = (claseId) => {
     }
   };
 
+  const actualizarActividad = async (actividadId, actividadData) => {
+    try {
+      await calificacionesService.actualizarActividad(actividadId, { ...actividadData, claseId });
+      await fetchMatriz();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const eliminarActividad = async (actividadId) => {
+    try {
+      await calificacionesService.eliminarActividad(actividadId);
+      await fetchMatriz();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
   return {
     matriz,
     loading,
     error,
     fetchMatriz,
     crearActividad,
-    registrarNota
+    registrarNota,
+    actualizarActividad,
+    eliminarActividad
   };
 };

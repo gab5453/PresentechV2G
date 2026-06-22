@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { login as loginRequest } from '../services/authService'
+import { login as loginRequest, loginStudent as loginStudentRequest } from '../services/authService'
 import { loginAdmin as loginAdminRequest } from '../services/adminService'
 import { getApiData } from '../services/api'
 import { AuthContext } from './AuthContextValue'
@@ -51,6 +51,23 @@ export function AuthProvider({ children }) {
     return response
   }, [])
 
+  const loginStudent = useCallback(async (credentials) => {
+    const response = await loginStudentRequest(credentials)
+    const data = getApiData(response)
+
+    if (!data?.token) {
+      throw new Error('La respuesta de autenticación no contiene un token válido.')
+    }
+
+    localStorage.setItem(TOKEN_KEY, data.token)
+    localStorage.setItem(USER_KEY, JSON.stringify({ ...data, role: 'Estudiante' }))
+    localStorage.setItem('docente_name', `${data.nombres} ${data.apellidos}`)
+    setToken(data.token)
+    setUser({ ...data, role: 'Estudiante' })
+
+    return response
+  }, [])
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
@@ -64,11 +81,12 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       loginAdmin,
+      loginStudent,
       logout,
       token,
       user,
     }),
-    [login, loginAdmin, logout, token, user],
+    [login, loginAdmin, loginStudent, logout, token, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

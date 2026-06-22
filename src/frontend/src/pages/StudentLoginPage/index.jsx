@@ -1,22 +1,22 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, Link } from 'react-router-dom'
 import { Button, Input } from '../../components/common'
 import { Footer } from '../../components/layout'
 import { getApiErrorMessage } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
 
-export function LoginPage() {
+export function StudentLoginPage() {
   const navigate = useNavigate()
-  const { isAuthenticated, login } = useAuth()
+  const { isAuthenticated, loginStudent } = useAuth()
   const [credentials, setCredentials] = useState({
-    correo_institucional: '',
+    cedula: '',
     contrasena: '',
   })
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/estudiante/dashboard" replace />
   }
 
   const handleSubmit = async (event) => {
@@ -25,8 +25,8 @@ export function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      await login(credentials)
-      navigate('/clases', { replace: true })
+      await loginStudent(credentials)
+      navigate('/estudiante/dashboard', { replace: true })
     } catch (requestError) {
       setError(getApiErrorMessage(requestError))
     } finally {
@@ -35,7 +35,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-gradient-to-br from-secondary via-background to-primary/10">
+    <div className="flex min-h-svh flex-col bg-gradient-to-br from-primary/10 via-background to-secondary/20">
     <main className="relative flex flex-1 items-center justify-center overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float" />
@@ -54,7 +54,7 @@ export function LoginPage() {
           />
           <h1 className="text-3xl font-bold text-foreground tracking-tight">PresenTech</h1>
           <p className="mt-2 text-center text-base text-muted-foreground">
-            Sistema de gestión de asistencia docente
+            Portal de Estudiantes
           </p>
         </div>
 
@@ -63,22 +63,22 @@ export function LoginPage() {
           onSubmit={handleSubmit}
         >
           <div className="mb-8 text-center">
-            <h2 className="text-xl font-semibold text-foreground">Acceso Docente</h2>
+            <h2 className="text-xl font-semibold text-foreground">Acceso Estudiante</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Ingrese sus credenciales institucionales
+              Ingresa con tu cédula
             </p>
           </div>
 
           <div className="space-y-5">
             <Input
-              label="Correo institucional"
-              type="email"
-              placeholder="ejemplo@institucion.edu.ec"
-              value={credentials.correo_institucional}
+              label="Número de Cédula"
+              type="text"
+              placeholder="Ingresa tu cédula"
+              value={credentials.cedula}
               onChange={(value) =>
                 setCredentials((current) => ({
                   ...current,
-                  correo_institucional: value,
+                  cedula: value,
                 }))
               }
             />
@@ -109,12 +109,9 @@ export function LoginPage() {
             </Button>
           </div>
           
-          <div className="mt-6 flex flex-col space-y-3 text-center">
-            <Link to="/estudiante/login" className="text-sm font-medium text-primary hover:underline">
-              ¿Eres estudiante? Inicia sesión aquí
-            </Link>
-            <Link to="/admin/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Acceso Administrativo
+          <div className="mt-6 text-center">
+            <Link to="/login" className="text-sm font-medium text-primary hover:underline">
+              ¿Eres docente? Inicia sesión aquí
             </Link>
           </div>
         </form>

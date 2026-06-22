@@ -2,8 +2,8 @@ import { CalendarDays, LogOut, UserRound } from 'lucide-react'
 import { Button } from '../../common'
 
 export function Header({ title, user, onLogout }) {
-  const teacherName = user ? `${user.nombres} ${user.apellidos}` : 'Docente'
-  const roleLabel = user?.rol === 'admin' ? 'Administrador' : 'Docente'
+  const teacherName = user ? `${user.nombres} ${user.apellidos}` : 'Usuario'
+  const roleLabel = user?.role === 'Estudiante' ? 'Estudiante' : (user?.rol === 'admin' ? 'Administrador' : 'Docente')
   const currentDate = new Intl.DateTimeFormat('es-EC', {
     day: '2-digit',
     month: 'short',

@@ -37,6 +37,7 @@ namespace Presentech.Business.Services
                 nombre = request.Nombre,
                 tipo = request.Tipo,
                 fecha = request.Fecha,
+                peso = request.Peso,
                 activo = true,
                 created_at = DateTime.UtcNow
             };
@@ -48,8 +49,42 @@ namespace Presentech.Business.Services
                 Id = creada.id_actividad,
                 Nombre = creada.nombre,
                 Tipo = creada.tipo,
-                Fecha = creada.fecha
+                Fecha = creada.fecha,
+                Peso = creada.peso
             };
+        }
+
+        public async Task<ActividadDto> EditarActividadAsync(int actividadId, CrearActividadRequest request)
+        {
+            var actividad = await _actividadRepository.ObtenerPorIdAsync(actividadId);
+            if (actividad == null)
+                throw new NotFoundException("Actividad", actividadId);
+
+            actividad.nombre = request.Nombre;
+            actividad.tipo = request.Tipo;
+            actividad.fecha = request.Fecha;
+            actividad.peso = request.Peso;
+
+            await _actividadRepository.UpdateAsync(actividad);
+
+            return new ActividadDto
+            {
+                Id = actividad.id_actividad,
+                Nombre = actividad.nombre,
+                Tipo = actividad.tipo,
+                Fecha = actividad.fecha,
+                Peso = actividad.peso
+            };
+        }
+
+        public async Task EliminarActividadAsync(int actividadId)
+        {
+            var actividad = await _actividadRepository.ObtenerPorIdAsync(actividadId);
+            if (actividad == null)
+                throw new NotFoundException("Actividad", actividadId);
+
+            actividad.activo = false; // Soft delete
+            await _actividadRepository.UpdateAsync(actividad);
         }
 
         public async Task<RegistrarNotaRequest> RegistrarNotaAsync(RegistrarNotaRequest request)
@@ -101,7 +136,8 @@ namespace Presentech.Business.Services
                 Id = a.id_actividad,
                 Nombre = a.nombre,
                 Tipo = a.tipo,
-                Fecha = a.fecha
+                Fecha = a.fecha,
+                Peso = a.peso
             }).ToList();
 
             // 2. Obtener todos los estudiantes de la clase (a través del paralelo)
@@ -121,8 +157,8 @@ namespace Presentech.Business.Services
                 };
 
                 // Llenar notas del estudiante
-                decimal sumaNotas = 0;
-                int countNotas = 0;
+                decimal sumaNotasPonderadas = 0;
+                decimal sumaPesosRegistrados = 0;
 
                 foreach (var actividad in actividades)
                 {
@@ -130,8 +166,8 @@ namespace Presentech.Business.Services
                     if (calificacion != null)
                     {
                         estudianteDto.Notas[actividad.id_actividad] = calificacion.nota;
-                        sumaNotas += calificacion.nota;
-                        countNotas++;
+                        sumaNotasPonderadas += calificacion.nota * actividad.peso;
+                        sumaPesosRegistrados += actividad.peso;
                     }
                     else
                     {
@@ -139,16 +175,20 @@ namespace Presentech.Business.Services
                     }
                 }
 
-                // Calcular promedio simple
-                if (countNotas > 0)
+                // Calcular promedio ponderado
+                if (actividades.Count > 0)
                 {
-                    estudianteDto.Promedio = Math.Round(sumaNotas / countNotas, 2);
+                    if (sumaPesosRegistrados > 0)
+                        estudianteDto.Promedio = Math.Round(sumaNotasPonderadas / sumaPesosRegistrados, 2);
+                    else
+                        estudianteDto.Promedio = 0;
+
                     estudianteDto.RequiereAlarma = estudianteDto.Promedio < 7.0m;
                 }
                 else
                 {
                     estudianteDto.Promedio = 0;
-                    estudianteDto.RequiereAlarma = true; // Sin notas, lo consideramos en alarma
+                    estudianteDto.RequiereAlarma = false; // Corrección de alarma falsa
                 }
 
                 response.Estudiantes.Add(estudianteDto);

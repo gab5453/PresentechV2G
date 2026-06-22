@@ -9,6 +9,7 @@ namespace Presentech.DataManagement.Interfaces
         // =========================
         Task<IReadOnlyList<EstudianteDataModel>> ObtenerPorParaleloAsync(int id_paralelo, CancellationToken cancellationToken = default);
         Task<EstudianteDataModel?> ObtenerPorIdAsync(int id_estudiante, CancellationToken cancellationToken = default);
+        Task<EstudianteDataModel?> ObtenerPorCedulaAsync(string cedula, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<EstudianteDataModel>> ObtenerTodosAsync(CancellationToken cancellationToken = default);
 
         // =========================
