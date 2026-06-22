@@ -307,6 +307,7 @@ namespace Presentech.Business.Services
             return estudiantes.Select(e => new EstudianteAdminResponse
             {
                 id_estudiante = e.id_estudiante,
+                cedula        = e.Cedula,
                 nombres       = e.nombres,
                 apellidos     = e.apellidos,
                 activo        = e.activo,
@@ -318,6 +319,7 @@ namespace Presentech.Business.Services
         {
             var model = new EstudianteDataModel
             {
+                Cedula    = request.cedula,
                 nombres   = request.nombres,
                 apellidos = request.apellidos,
                 activo    = true,
@@ -326,6 +328,7 @@ namespace Presentech.Business.Services
             return new EstudianteAdminResponse
             {
                 id_estudiante = created.id_estudiante,
+                cedula        = created.Cedula,
                 nombres       = created.nombres,
                 apellidos     = created.apellidos,
                 activo        = created.activo,
@@ -345,6 +348,7 @@ namespace Presentech.Business.Services
             return new EstudianteAdminResponse
             {
                 id_estudiante = estudiante!.id_estudiante,
+                cedula        = estudiante.Cedula,
                 nombres       = estudiante.nombres,
                 apellidos     = estudiante.apellidos,
                 activo        = estudiante.activo,

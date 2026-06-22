@@ -108,6 +108,7 @@ namespace Presentech.Business.DTOs.Admin
     public class EstudianteAdminResponse
     {
         public int id_estudiante { get; set; }
+        public string cedula { get; set; } = string.Empty;
         public string nombres { get; set; } = string.Empty;
         public string apellidos { get; set; } = string.Empty;
         public bool activo { get; set; }
@@ -116,6 +117,7 @@ namespace Presentech.Business.DTOs.Admin
 
     public class CrearEstudianteRequest
     {
+        public string cedula { get; set; } = string.Empty;
         public string nombres { get; set; } = string.Empty;
         public string apellidos { get; set; } = string.Empty;
     }
