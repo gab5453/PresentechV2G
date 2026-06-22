@@ -53,12 +53,17 @@ namespace Presentech.Business.Services
                 if (actividades.Count > 0)
                 {
                     var calificaciones = await _calificacionRepository.GetByClaseIdAsync(clase.id_clase);
-                    var calificacionesEstudiante = calificaciones.Where(c => c.id_estudiante == idEstudiante).ToList();
+                    
+                    // Asegurar evaluación en memoria
+                    var calificacionesList = calificaciones.ToList();
+                    var actividadesList = actividades.ToList();
+                    
+                    var calificacionesEstudiante = calificacionesList.Where(c => c.id_estudiante == idEstudiante).ToList();
 
                     decimal sumaNotasPonderadas = 0;
                     decimal sumaPesosRegistrados = 0;
 
-                    foreach (var actividad in actividades)
+                    foreach (var actividad in actividadesList)
                     {
                         var calif = calificacionesEstudiante.FirstOrDefault(c => c.id_actividad == actividad.id_actividad);
                         if (calif != null)
@@ -85,8 +90,12 @@ namespace Presentech.Business.Services
                 if (registros.Count > 0)
                 {
                     var registroIds = registros.Select(r => r.id_registro).ToList();
-                    var asistencias = _asistenciaRepository.GetAll()
-                        .Where(a => a.id_estudiante == idEstudiante && registroIds.Contains(a.id_registro))
+                    
+                    // Extraer todo a memoria primero para evitar problemas de traducción de LINQ a SQL
+                    var todasAsistencias = _asistenciaRepository.GetAll().Where(a => a.id_estudiante == idEstudiante).ToList();
+                    
+                    var asistencias = todasAsistencias
+                        .Where(a => registroIds.Contains(a.id_registro))
                         .ToList();
 
                     int faltas = asistencias.Count(a => !a.asistio);
@@ -133,8 +142,10 @@ namespace Presentech.Business.Services
             var registros = await _registroAsistenciaRepository.ObtenerPorClaseAsync(idClase, cancellationToken);
             var registroIds = registros.Select(r => r.id_registro).ToList();
             
-            var asistencias = _asistenciaRepository.GetAll()
-                .Where(a => a.id_estudiante == idEstudiante && registroIds.Contains(a.id_registro))
+            // Evaluamos en memoria para evitar EF translation errors
+            var todasAsistencias = _asistenciaRepository.GetAll().Where(a => a.id_estudiante == idEstudiante).ToList();
+            var asistencias = todasAsistencias
+                .Where(a => registroIds.Contains(a.id_registro))
                 .ToList();
 
             // Map all dates that have an attendance record (some might be missing if professor didn't take attendance, but we just show what's recorded)

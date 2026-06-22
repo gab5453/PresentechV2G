@@ -2,8 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 
 export function StudentTabs() {
   const location = useLocation();
-  const isDashboard = location.pathname === '/estudiante/dashboard';
-  const isClases = location.pathname.startsWith('/estudiante/clases');
+  const isDashboard = location.pathname.includes('/dashboard');
+  const isClases = location.pathname.includes('/clases');
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', to: '/estudiante/dashboard', active: isDashboard },
