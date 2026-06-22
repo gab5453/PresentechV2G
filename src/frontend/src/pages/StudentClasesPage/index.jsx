@@ -4,6 +4,8 @@ import { AppLayout } from '../../components/layout';
 import { studentService } from '../../services/studentService';
 import { Spinner, Button } from '../../components/common';
 
+import { StudentTabs } from '../../components/layout/StudentTabs';
+
 export const StudentClasesView = () => {
   const { idClase } = useParams();
   const [resumen, setResumen] = useState(null);
@@ -47,6 +49,8 @@ export const StudentClasesView = () => {
   return (
     <div className="w-full">
       <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6 space-y-6">
+        <StudentTabs />
+        
         <div className="flex items-center mb-6">
           <Button asChild className="-ml-2 min-h-9 px-2 mr-4" variant="ghost">
             <Link to="/estudiante/dashboard">

@@ -4,6 +4,8 @@ import { AppLayout } from '../../components/layout';
 import { studentService } from '../../services/studentService';
 import { Spinner } from '../../components/common';
 
+import { StudentTabs } from '../../components/layout/StudentTabs';
+
 export const StudentDashboardView = () => {
   const [dashboard, setDashboard] = useState(null);
   const [clases, setClases] = useState([]);
@@ -29,12 +31,7 @@ export const StudentDashboardView = () => {
   return (
     <div className="w-full">
       <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6 space-y-6">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground tracking-tight">Mi Resumen</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Aquí puedes ver tu rendimiento general y clases actuales.
-          </p>
-        </div>
+        <StudentTabs />
 
         {loading ? (
           <div className="flex min-h-64 items-center justify-center">

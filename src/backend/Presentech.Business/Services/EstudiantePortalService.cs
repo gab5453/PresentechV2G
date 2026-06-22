@@ -48,46 +48,50 @@ namespace Presentech.Business.Services
             foreach (var clase in clasesMatriculadas)
             {
                 var actividades = await _actividadRepository.GetByClaseIdAsync(clase.id_clase);
-                if (actividades.Count == 0) continue;
-
-                var calificaciones = await _calificacionRepository.GetByClaseIdAsync(clase.id_clase);
-                var calificacionesEstudiante = calificaciones.Where(c => c.id_estudiante == idEstudiante).ToList();
-
-                decimal sumaNotasPonderadas = 0;
-                decimal sumaPesosRegistrados = 0;
-
-                foreach (var actividad in actividades)
+                if (actividades.Count > 0)
                 {
-                    var calif = calificacionesEstudiante.FirstOrDefault(c => c.id_actividad == actividad.id_actividad);
-                    if (calif != null)
+                    var calificaciones = await _calificacionRepository.GetByClaseIdAsync(clase.id_clase);
+                    var calificacionesEstudiante = calificaciones.Where(c => c.id_estudiante == idEstudiante).ToList();
+
+                    decimal sumaNotasPonderadas = 0;
+                    decimal sumaPesosRegistrados = 0;
+
+                    foreach (var actividad in actividades)
                     {
-                        sumaNotasPonderadas += calif.nota * actividad.peso;
-                        sumaPesosRegistrados += actividad.peso;
+                        var calif = calificacionesEstudiante.FirstOrDefault(c => c.id_actividad == actividad.id_actividad);
+                        if (calif != null)
+                        {
+                            sumaNotasPonderadas += calif.nota * actividad.peso;
+                            sumaPesosRegistrados += actividad.peso;
+                        }
                     }
-                }
 
-                if (sumaPesosRegistrados > 0)
-                {
-                    decimal promedioMateria = Math.Round(sumaNotasPonderadas / sumaPesosRegistrados, 2);
-                    sumaPromedios += promedioMateria;
-                    clasesConPromedio++;
-
-                    if (promedioMateria < 7.0m)
+                    if (sumaPesosRegistrados > 0)
                     {
-                        response.Alarmas.Add($"Rendimiento bajo ({promedioMateria}) en {clase.Materia?.Nombre ?? "la materia"}");
+                        decimal promedioMateria = Math.Round(sumaNotasPonderadas / sumaPesosRegistrados, 2);
+                        sumaPromedios += promedioMateria;
+                        clasesConPromedio++;
+
+                        if (promedioMateria < 7.0m)
+                        {
+                            response.Alarmas.Add($"Rendimiento bajo ({promedioMateria}) en {clase.Materia?.Nombre ?? "la materia"}");
+                        }
                     }
                 }
 
                 var registros = await _registroAsistenciaRepository.ObtenerPorClaseAsync(clase.id_clase, cancellationToken);
-                var registroIds = registros.Select(r => r.id_registro).ToList();
-                var asistencias = _asistenciaRepository.GetAll()
-                    .Where(a => a.id_estudiante == idEstudiante && registroIds.Contains(a.id_registro))
-                    .ToList();
-
-                int faltas = asistencias.Count(a => !a.asistio);
-                if (faltas >= 3)
+                if (registros.Count > 0)
                 {
-                    response.Alarmas.Add($"Atención: Tienes {faltas} faltas acumuladas en {clase.Materia?.Nombre ?? "la materia"}");
+                    var registroIds = registros.Select(r => r.id_registro).ToList();
+                    var asistencias = _asistenciaRepository.GetAll()
+                        .Where(a => a.id_estudiante == idEstudiante && registroIds.Contains(a.id_registro))
+                        .ToList();
+
+                    int faltas = asistencias.Count(a => !a.asistio);
+                    if (faltas >= 3)
+                    {
+                        response.Alarmas.Add($"Atención: Tienes {faltas} faltas acumuladas en {clase.Materia?.Nombre ?? "la materia"}");
+                    }
                 }
             }
 

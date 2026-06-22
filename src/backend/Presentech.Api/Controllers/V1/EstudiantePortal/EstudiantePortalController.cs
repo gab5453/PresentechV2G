@@ -33,23 +33,44 @@ public class EstudiantePortalController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<EstudianteDashboardResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDashboard(CancellationToken cancellationToken)
     {
-        var result = await _portalService.GetDashboardAsync(GetEstudianteId(), cancellationToken);
-        return Ok(ApiResponse<EstudianteDashboardResponse>.Ok(result, "Dashboard cargado"));
+        try
+        {
+            var result = await _portalService.GetDashboardAsync(GetEstudianteId(), cancellationToken);
+            return Ok(ApiResponse<EstudianteDashboardResponse>.Ok(result, "Dashboard cargado"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<EstudianteDashboardResponse> { Success = false, Message = ex.Message });
+        }
     }
 
     [HttpGet("clases")]
     [ProducesResponseType(typeof(ApiResponse<List<EstudianteClaseDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClases(CancellationToken cancellationToken)
     {
-        var result = await _portalService.GetClasesAsync(GetEstudianteId(), cancellationToken);
-        return Ok(ApiResponse<List<EstudianteClaseDto>>.Ok(result, "Clases cargadas"));
+        try
+        {
+            var result = await _portalService.GetClasesAsync(GetEstudianteId(), cancellationToken);
+            return Ok(ApiResponse<List<EstudianteClaseDto>>.Ok(result, "Clases cargadas"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<List<EstudianteClaseDto>> { Success = false, Message = ex.Message });
+        }
     }
 
     [HttpGet("clases/{idClase:int}/resumen")]
     [ProducesResponseType(typeof(ApiResponse<EstudianteClaseResumenResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetResumenClase(int idClase, CancellationToken cancellationToken)
     {
-        var result = await _portalService.GetResumenClaseAsync(GetEstudianteId(), idClase, cancellationToken);
-        return Ok(ApiResponse<EstudianteClaseResumenResponse>.Ok(result, "Resumen de clase cargado"));
+        try
+        {
+            var result = await _portalService.GetResumenClaseAsync(GetEstudianteId(), idClase, cancellationToken);
+            return Ok(ApiResponse<EstudianteClaseResumenResponse>.Ok(result, "Resumen de clase cargado"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<EstudianteClaseResumenResponse> { Success = false, Message = ex.Message });
+        }
     }
 }
