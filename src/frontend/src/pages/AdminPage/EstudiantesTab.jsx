@@ -13,7 +13,7 @@ export function EstudiantesTab() {
 
   // Crear estudiante
   const [isCrearModalOpen, setIsCrearModalOpen] = useState(false)
-  const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombres: '', apellidos: '' })
+  const [nuevoEstudiante, setNuevoEstudiante] = useState({ cedula: '', nombres: '', apellidos: '' })
   const [isCreating, setIsCreating] = useState(false)
 
   // Asignar paralelo a estudiante
@@ -54,7 +54,7 @@ export function EstudiantesTab() {
     setError('')
     try {
       await crearEstudiante(nuevoEstudiante)
-      setNuevoEstudiante({ nombres: '', apellidos: '' })
+      setNuevoEstudiante({ cedula: '', nombres: '', apellidos: '' })
       setIsCrearModalOpen(false)
       loadData()
     } catch (requestError) {
@@ -156,6 +156,7 @@ export function EstudiantesTab() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
               <tr>
+                <th className="px-4 py-3 font-medium">Cédula</th>
                 <th className="px-4 py-3 font-medium">Nombres</th>
                 <th className="px-4 py-3 font-medium">Apellidos</th>
                 <th className="px-4 py-3 font-medium">Paralelos</th>
@@ -166,6 +167,7 @@ export function EstudiantesTab() {
               {estudiantes.length > 0 ? (
                 estudiantes.map((estudiante) => (
                   <tr key={estudiante.id_estudiante} className="hover:bg-muted/50">
+                    <td className="px-4 py-3 text-foreground">{estudiante.cedula || 'N/A'}</td>
                     <td className="px-4 py-3 text-foreground">{estudiante.nombres}</td>
                     <td className="px-4 py-3 text-foreground">{estudiante.apellidos}</td>
                     <td className="px-4 py-3">
@@ -195,7 +197,7 @@ export function EstudiantesTab() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
                     No se encontraron estudiantes registrados.
                   </td>
                 </tr>
@@ -216,6 +218,12 @@ export function EstudiantesTab() {
         isSubmitting={isCreating}
       >
         <div className="space-y-4">
+          <Input
+            label="Cédula"
+            placeholder="Número de cédula"
+            value={nuevoEstudiante.cedula}
+            onChange={(val) => setNuevoEstudiante({ ...nuevoEstudiante, cedula: val })}
+          />
           <Input
             label="Nombres"
             placeholder="Nombres del estudiante"
