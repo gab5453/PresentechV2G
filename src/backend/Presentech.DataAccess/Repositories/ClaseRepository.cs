@@ -46,13 +46,17 @@ namespace Presentech.DataAccess.Repositories
 
         public async Task<IReadOnlyList<ClaseEntity>> ObtenerPorEstudianteAsync(int id_estudiante, CancellationToken cancellationToken = default)
         {
+            var idsParalelos = await _context.ParaleloEstudiantes
+                .Where(pe => pe.id_estudiante == id_estudiante && pe.activo)
+                .Select(pe => pe.id_paralelo)
+                .ToListAsync(cancellationToken);
+
             return await _context.Clases
                 .AsNoTracking()
                 .Include(c => c.Paralelo)
                 .Include(c => c.Materia)
                 .Include(c => c.Profesor)
-                .Where(c => c.activo && _context.ParaleloEstudiantes
-                    .Any(pe => pe.id_paralelo == c.id_paralelo && pe.id_estudiante == id_estudiante && pe.activo))
+                .Where(c => c.activo && idsParalelos.Contains(c.id_paralelo))
                 .OrderBy(c => c.Materia.Nombre)
                 .ToListAsync(cancellationToken);
         }

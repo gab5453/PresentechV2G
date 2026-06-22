@@ -1,5 +1,7 @@
+using Presentech.Business.DTOs.Clase;
 using Presentech.Business.DTOs.EstudiantePortal;
 using Presentech.Business.Interfaces;
+using Presentech.Business.Mappers;
 using Presentech.DataAccess.Repositories.Interfaces;
 
 namespace Presentech.Business.Services
@@ -103,20 +105,23 @@ namespace Presentech.Business.Services
             return response;
         }
 
-        public async Task<List<EstudianteClaseDto>> GetClasesAsync(int idEstudiante, CancellationToken cancellationToken = default)
+        public async Task<List<ClaseResponse>> GetClasesAsync(int idEstudiante, CancellationToken cancellationToken = default)
         {
             var clases = await _claseRepository.ObtenerPorEstudianteAsync(idEstudiante, cancellationToken);
-            
-            // Note: Ideally we want Materia and Paralelo names. Since IClaseRepository might not eager load them,
-            // we will return generic names if not loaded, or you can implement loading in repository.
-            // Assuming ObtenerPorEstudianteAsync eagerly loads Materia and Paralelo (or we can just mock the names for now to prove concept)
-            
-            return clases.Select(c => new EstudianteClaseDto
+            return clases.Select(c => new ClaseResponse
             {
-                IdClase = c.id_clase,
-                Materia = c.Materia?.Nombre ?? $"Clase {c.id_clase}",
-                Paralelo = c.Paralelo?.nombre ?? "Paralelo ?",
-                Profesor = c.Profesor != null ? $"{c.Profesor.nombres} {c.Profesor.apellidos}" : "Profesor No Asignado"
+                id_clase = c.id_clase,
+                id_paralelo = c.id_paralelo,
+                materia = c.Materia?.Nombre ?? $"Clase {c.id_clase}",
+                nombre_paralelo = c.Paralelo?.nombre ?? "Paralelo ?",
+                horarios = c.ClasesHorario?.Select(h => new ClaseHorarioResponse
+                {
+                    id_horario = h.id_horario,
+                    nombre_dia = h.DiaSemana?.nombre ?? "Desconocido",
+                    orden_dia = h.DiaSemana?.orden ?? 0,
+                    hora_inicio = h.hora_inicio,
+                    hora_fin = h.hora_fin
+                }).ToList() ?? new List<ClaseHorarioResponse>()
             }).ToList();
         }
 

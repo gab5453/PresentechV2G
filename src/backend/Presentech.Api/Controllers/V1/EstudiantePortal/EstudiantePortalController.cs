@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentech.Api.Models.Common;
 using Presentech.Business.DTOs.EstudiantePortal;
+using Presentech.Business.DTOs.Clase;
 using Presentech.Business.Interfaces;
 
 namespace Presentech.Api.Controllers.V1.EstudiantePortal;
@@ -45,17 +46,17 @@ public class EstudiantePortalController : ControllerBase
     }
 
     [HttpGet("clases")]
-    [ProducesResponseType(typeof(ApiResponse<List<EstudianteClaseDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<ClaseResponse>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClases(CancellationToken cancellationToken)
     {
         try
         {
             var result = await _portalService.GetClasesAsync(GetEstudianteId(), cancellationToken);
-            return Ok(ApiResponse<List<EstudianteClaseDto>>.Ok(result, "Clases cargadas"));
+            return Ok(ApiResponse<List<ClaseResponse>>.Ok(result, "Clases cargadas"));
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<List<EstudianteClaseDto>> { Success = false, Message = ex.Message });
+            return BadRequest(new ApiResponse<List<ClaseResponse>> { Success = false, Message = ex.Message });
         }
     }
 

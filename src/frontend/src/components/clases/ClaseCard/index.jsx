@@ -1,9 +1,9 @@
-import { Calendar, Clock, Table } from 'lucide-react'
+import { Calendar, Clock, Table, BookOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../common'
 import { formatHorario, formatTime, getProximaClase } from '../../../utils/claseUtils'
 
-export function ClaseCard({ clase }) {
+export function ClaseCard({ clase, isStudent }) {
   const proximaClase = getProximaClase(clase.horarios)
 
   return (
@@ -30,7 +30,7 @@ export function ClaseCard({ clase }) {
       <div className="mb-4">
         <p className="mb-2 text-xs text-muted-foreground">Horarios semanales</p>
         <div className="flex flex-wrap gap-1.5">
-          {clase.horarios.map((horario) => (
+          {clase.horarios?.map((horario) => (
             <span
               className="inline-flex rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
               key={horario.id_horario}
@@ -43,18 +43,29 @@ export function ClaseCard({ clase }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button asChild className="w-full min-h-9 text-sm">
-          <Link to={`/clases/${clase.id_clase}/calendario`}>
-            <Calendar aria-hidden="true" className="h-4 w-4" />
-            Ver asistencia
-          </Link>
-        </Button>
-        <Button asChild variant="secondary" className="w-full min-h-9 text-sm">
-          <Link to={`/clases/${clase.id_clase}/calificaciones`}>
-            <Table aria-hidden="true" className="h-4 w-4" />
-            Calificaciones
-          </Link>
-        </Button>
+        {isStudent ? (
+          <Button asChild className="w-full min-h-9 text-sm">
+            <Link to={`/estudiante/clases/${clase.id_clase}`}>
+              <BookOpen aria-hidden="true" className="h-4 w-4 mr-2" />
+              Ver Detalles de Clase
+            </Link>
+          </Button>
+        ) : (
+          <>
+            <Button asChild className="w-full min-h-9 text-sm">
+              <Link to={`/clases/${clase.id_clase}/calendario`}>
+                <Calendar aria-hidden="true" className="h-4 w-4 mr-2" />
+                Ver asistencia
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="w-full min-h-9 text-sm">
+              <Link to={`/clases/${clase.id_clase}/calificaciones`}>
+                <Table aria-hidden="true" className="h-4 w-4 mr-2" />
+                Calificaciones
+              </Link>
+            </Button>
+          </>
+        )}
       </div>
     </article>
   )

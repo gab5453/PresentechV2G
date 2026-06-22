@@ -107,6 +107,7 @@ function App() {
         }
       >
         <Route path="/estudiante/dashboard" element={<StudentDashboardView />} />
+        <Route path="/estudiante/clases" element={<StudentClasesView />} />
         <Route path="/estudiante/clases/:idClase" element={<StudentClasesView />} />
       </Route>
 

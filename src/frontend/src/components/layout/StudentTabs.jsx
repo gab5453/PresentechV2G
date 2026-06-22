@@ -7,7 +7,7 @@ export function StudentTabs() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', to: '/estudiante/dashboard', active: isDashboard },
-    { id: 'clases', label: 'Mis Clases', to: '/estudiante/dashboard', active: isClases },
+    { id: 'clases', label: 'Mis Clases', to: '/estudiante/clases', active: isClases },
   ];
 
   return (
