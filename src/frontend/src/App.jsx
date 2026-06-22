@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AsistenciaPage } from './pages/AsistenciaPage'
+import { AppLayout } from './components/layout'
 import { ProtectedRoute } from './routes/ProtectedRoute.jsx'
 import { ApiTesterPage } from './pages/ApiTesterPage.jsx'
 import { CalendarioPage } from './pages/CalendarioPage'
@@ -99,21 +100,15 @@ function App() {
       {/* Student Routes */}
       <Route path="/estudiante/login" element={<StudentLoginPage />} />
       <Route
-        path="/estudiante/dashboard"
         element={
           <StudentRoute>
-            <StudentDashboardView />
+            <AppLayout />
           </StudentRoute>
         }
-      />
-      <Route
-        path="/estudiante/clases/:idClase"
-        element={
-          <StudentRoute>
-            <StudentClasesView />
-          </StudentRoute>
-        }
-      />
+      >
+        <Route path="/estudiante/dashboard" element={<StudentDashboardView />} />
+        <Route path="/estudiante/clases/:idClase" element={<StudentClasesView />} />
+      </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

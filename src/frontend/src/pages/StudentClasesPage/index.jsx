@@ -25,11 +25,11 @@ export const StudentClasesView = () => {
 
   if (loading) {
     return (
-      <AppLayout title="Detalle de Clase">
+      <div className="w-full">
         <div className="flex min-h-[50vh] items-center justify-center">
           <Spinner size="lg" />
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
@@ -45,7 +45,7 @@ export const StudentClasesView = () => {
   const promedio = sumaPesos > 0 ? sumaPonderada / sumaPesos : 0;
 
   return (
-    <AppLayout title="Detalle de Clase">
+    <div className="w-full">
       <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6 space-y-6">
         <div className="flex items-center mb-6">
           <Button asChild className="-ml-2 min-h-9 px-2 mr-4" variant="ghost">
@@ -190,6 +190,6 @@ export const StudentClasesView = () => {
 
         </div>
       </section>
-    </AppLayout>
+    </div>
   );
 };

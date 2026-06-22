@@ -27,7 +27,7 @@ export const StudentDashboardView = () => {
   }, []);
 
   return (
-    <AppLayout title="Portal Estudiante">
+    <div className="w-full">
       <section className="container mx-auto max-w-5xl px-4 py-4 md:py-6 space-y-6">
         <div>
           <h2 className="text-2xl font-semibold text-foreground tracking-tight">Mi Resumen</h2>
@@ -107,6 +107,6 @@ export const StudentDashboardView = () => {
           </>
         )}
       </section>
-    </AppLayout>
+    </div>
   );
 };

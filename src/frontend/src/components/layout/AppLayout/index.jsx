@@ -1,5 +1,6 @@
 import { Footer } from '../Footer'
 import { Header } from '../Header'
+import { Outlet } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 
 export function AppLayout({ children, title }) {
@@ -13,7 +14,7 @@ export function AppLayout({ children, title }) {
       
       <div className="relative z-10 flex flex-col flex-1 h-full w-full">
         <Header title={title} user={user} onLogout={logout} />
-        <main className="flex-1 overflow-x-hidden animate-fade-in">{children}</main>
+        <main className="flex-1 overflow-x-hidden animate-fade-in">{children || <Outlet />}</main>
         <Footer />
       </div>
     </div>
