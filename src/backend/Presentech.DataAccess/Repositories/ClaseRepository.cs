@@ -50,6 +50,7 @@ namespace Presentech.DataAccess.Repositories
                 .AsNoTracking()
                 .Include(c => c.Paralelo)
                 .Include(c => c.Materia)
+                .Include(c => c.Profesor)
                 .Where(c => c.activo && c.Paralelo.ParaleloEstudiantes.Any(pe => pe.id_estudiante == id_estudiante && pe.activo))
                 .OrderBy(c => c.Materia.Nombre)
                 .ToListAsync(cancellationToken);

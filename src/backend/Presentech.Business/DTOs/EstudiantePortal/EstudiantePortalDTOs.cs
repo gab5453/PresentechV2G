@@ -12,6 +12,7 @@ namespace Presentech.Business.DTOs.EstudiantePortal
         public int IdClase { get; set; }
         public string Materia { get; set; } = string.Empty;
         public string Paralelo { get; set; } = string.Empty;
+        public string Profesor { get; set; } = string.Empty;
     }
 
     public class EstudianteClaseResumenResponse

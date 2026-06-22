@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { CalendarDays, LogOut, UserRound } from 'lucide-react'
 import { Button } from '../../common'
 
@@ -31,6 +32,13 @@ export function Header({ title, user, onLogout }) {
           </div>
 
           <div className="h-6 w-px shrink-0 bg-border" />
+
+          {user?.role === 'Estudiante' && (
+            <nav className="hidden md:flex items-center gap-6 ml-4">
+              <Link to="/estudiante/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Dashboard</Link>
+              <Link to="/estudiante/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Mis Clases</Link>
+            </nav>
+          )}
 
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold text-foreground">{title}</h1>

@@ -74,9 +74,20 @@ namespace Presentech.Business.Services
 
                     if (promedioMateria < 7.0m)
                     {
-                        // TODO: Map to Materia name instead of ID if easy
-                        response.Alarmas.Add($"Rendimiento bajo ({promedioMateria}) en la clase {clase.id_clase}");
+                        response.Alarmas.Add($"Rendimiento bajo ({promedioMateria}) en {clase.Materia?.Nombre ?? "la materia"}");
                     }
+                }
+
+                var registros = await _registroAsistenciaRepository.ObtenerPorClaseAsync(clase.id_clase, cancellationToken);
+                var registroIds = registros.Select(r => r.id_registro).ToList();
+                var asistencias = _asistenciaRepository.GetAll()
+                    .Where(a => a.id_estudiante == idEstudiante && registroIds.Contains(a.id_registro))
+                    .ToList();
+
+                int faltas = asistencias.Count(a => !a.asistio);
+                if (faltas >= 3)
+                {
+                    response.Alarmas.Add($"Atención: Tienes {faltas} faltas acumuladas en {clase.Materia?.Nombre ?? "la materia"}");
                 }
             }
 
@@ -100,7 +111,8 @@ namespace Presentech.Business.Services
             {
                 IdClase = c.id_clase,
                 Materia = c.Materia?.Nombre ?? $"Clase {c.id_clase}",
-                Paralelo = c.Paralelo?.nombre ?? "Paralelo ?"
+                Paralelo = c.Paralelo?.nombre ?? "Paralelo ?",
+                Profesor = c.Profesor != null ? $"{c.Profesor.nombres} {c.Profesor.apellidos}" : "Profesor No Asignado"
             }).ToList();
         }
 
