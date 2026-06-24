@@ -46,4 +46,30 @@ public class ReportesController : PresentechBaseController
 
         return Ok(ApiResponse<ReporteAsistenciaResponse>.Ok(result, "Reporte generado exitosamente."));
     }
+
+    [HttpGet("calificaciones")]
+    [ProducesResponseType(typeof(ApiResponse<ReporteCalificacionesResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GenerarCalificaciones(
+        [FromQuery] int idClase,
+        [FromQuery] DateOnly fechaInicio,
+        [FromQuery] DateOnly fechaFin,
+        [FromQuery] int? idEstudiante,
+        CancellationToken cancellationToken)
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        int? idProfesor = role == "admin" ? null : IdProfesor;
+
+        var result = await _reporteService.GenerarCalificacionesAsync(
+            idClase,
+            fechaInicio,
+            fechaFin,
+            idEstudiante,
+            idProfesor,
+            cancellationToken);
+
+        return Ok(ApiResponse<ReporteCalificacionesResponse>.Ok(result, "Reporte de calificaciones generado exitosamente."));
+    }
 }

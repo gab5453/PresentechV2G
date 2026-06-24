@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Button, Input } from '../../components/common'
 import { Footer } from '../../components/layout'
 import { getApiErrorMessage } from '../../services/api'
@@ -111,9 +111,17 @@ export function AdminLoginPage() {
             </Button>
           </div>
         </form>
-        <p className="mt-10 text-center text-sm text-muted-foreground font-medium z-30">
-          Fe y Alegría &middot; Innovación Educativa
-        </p>
+        <div className="mt-10 flex flex-col items-center gap-4 z-30">
+          <Link
+            to="/login"
+            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            ¿Eres docente? Vuelve al inicio de sesión principal
+          </Link>
+          <p className="text-sm text-muted-foreground font-medium">
+            Fe y Alegría &middot; Innovación Educativa
+          </p>
+        </div>
       </section>
     </main>
     <Footer />

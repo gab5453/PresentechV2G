@@ -14,7 +14,10 @@ import {
   obtenerEstudiantesClase,
   obtenerMisClases,
 } from '../../services/clasesService'
-import { generarReporteAsistencia } from '../../services/reportesService'
+import {
+  generarReporteAsistencia,
+  generarReporteCalificaciones,
+} from '../../services/reportesService'
 import { ReportPreviewModal } from './ReportPreviewModal'
 
 const today = new Date()
@@ -89,6 +92,7 @@ export function ReportesView() {
   const [classes, setClasses] = useState([])
   const [students, setStudents] = useState([])
   const [filters, setFilters] = useState({
+    reportCategory: 'asistencia',
     startDate: schoolYear.start,
     endDate: defaultEndDate,
     quarter: '',
@@ -228,7 +232,7 @@ export function ReportesView() {
     setIsGenerating(true)
 
     try {
-      const response = await generarReporteAsistencia({
+      const payload = {
         idClase: Number(filters.classId),
         fechaInicio: filters.startDate,
         fechaFin: filters.endDate,
@@ -236,7 +240,12 @@ export function ReportesView() {
           filters.reportType === 'individual'
             ? Number(filters.studentId)
             : undefined,
-      })
+      }
+      const response =
+        filters.reportCategory === 'asistencia'
+          ? await generarReporteAsistencia(payload)
+          : await generarReporteCalificaciones(payload)
+      
       setReport(getApiData(response))
     } catch (requestError) {
       setError(getApiErrorMessage(requestError))
@@ -250,8 +259,13 @@ export function ReportesView() {
     setIsCreatingPdf(true)
     setError('')
     try {
-      const { createReportPdf } = await import('../../utils/reportPdf')
-      return await createReportPdf(report)
+      if (filters.reportCategory === 'asistencia') {
+        const { createReportPdf } = await import('../../utils/reportPdf')
+        return await createReportPdf(report)
+      } else {
+        const { createReportCalificacionesPdf } = await import('../../utils/reportCalificacionesPdf')
+        return await createReportCalificacionesPdf(report)
+      }
     } catch (pdfError) {
       setError(pdfError.message || 'No se pudo generar el PDF.')
       return null
@@ -263,8 +277,13 @@ export function ReportesView() {
   const handleDownload = async () => {
     const doc = await buildPdf()
     if (doc) {
-      const { getReportFileName } = await import('../../utils/reportPdf')
-      doc.save(getReportFileName(report))
+      if (filters.reportCategory === 'asistencia') {
+        const { getReportFileName } = await import('../../utils/reportPdf')
+        doc.save(getReportFileName(report))
+      } else {
+        const { getReportFileName } = await import('../../utils/reportCalificacionesPdf')
+        doc.save(getReportFileName(report))
+      }
     }
   }
 
@@ -272,10 +291,18 @@ export function ReportesView() {
     const doc = await buildPdf()
     if (!doc) return
 
-    const { getReportFileName } = await import('../../utils/reportPdf')
     if (preview.url) URL.revokeObjectURL(preview.url)
     const url = URL.createObjectURL(doc.output('blob'))
-    setPreview({ fileName: getReportFileName(report), url })
+    
+    let fileName = ''
+    if (filters.reportCategory === 'asistencia') {
+      const { getReportFileName } = await import('../../utils/reportPdf')
+      fileName = getReportFileName(report)
+    } else {
+      const { getReportFileName } = await import('../../utils/reportCalificacionesPdf')
+      fileName = getReportFileName(report)
+    }
+    setPreview({ fileName, url })
   }
 
   const closePreview = () => {
@@ -286,9 +313,9 @@ export function ReportesView() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-medium text-foreground">Reportes de asistencia</h2>
+        <h2 className="text-xl font-medium text-foreground">Reportes Académicos</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Consulta indicadores por curso o estudiante y genera documentos institucionales.
+          Consulta indicadores de asistencia y calificaciones por curso o estudiante.
         </p>
       </div>
 
@@ -308,7 +335,31 @@ export function ReportesView() {
             <Spinner size="lg" />
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="xl:col-span-4 flex gap-4 border-b border-border/50 pb-4 mb-2">
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+                  filters.reportCategory === 'asistencia'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+                onClick={() => updateFilter('reportCategory', 'asistencia')}
+              >
+                Reporte de Asistencia
+              </button>
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+                  filters.reportCategory === 'calificaciones'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+                onClick={() => updateFilter('reportCategory', 'calificaciones')}
+              >
+                Reporte de Calificaciones
+              </button>
+            </div>
             <SearchableSelect
               label="Trimestre"
               options={quarterOptions}
@@ -404,21 +455,43 @@ export function ReportesView() {
               label="Estudiantes"
               value={report.resumen.total_estudiantes}
             />
-            <SummaryCard
-              icon={BarChart3}
-              label="Asistencia promedio"
-              value={`${report.resumen.promedio_asistencia.toFixed(1)}%`}
-            />
-            <SummaryCard
-              icon={AlertTriangle}
-              label="Faltas"
-              value={report.resumen.total_faltas}
-            />
-            <SummaryCard
-              icon={FileText}
-              label="Atrasos"
-              value={report.resumen.total_atrasos}
-            />
+            {filters.reportCategory === 'asistencia' ? (
+              <>
+                <SummaryCard
+                  icon={BarChart3}
+                  label="Asistencia promedio"
+                  value={`${report.resumen.promedio_asistencia.toFixed(1)}%`}
+                />
+                <SummaryCard
+                  icon={AlertTriangle}
+                  label="Faltas"
+                  value={report.resumen.total_faltas}
+                />
+                <SummaryCard
+                  icon={FileText}
+                  label="Atrasos"
+                  value={report.resumen.total_atrasos}
+                />
+              </>
+            ) : (
+              <>
+                <SummaryCard
+                  icon={BarChart3}
+                  label="Promedio Curso"
+                  value={`${report.resumen.promedio_curso.toFixed(2)}`}
+                />
+                <SummaryCard
+                  icon={FileText}
+                  label="Aprobados"
+                  value={report.resumen.aprobados}
+                />
+                <SummaryCard
+                  icon={AlertTriangle}
+                  label="En Riesgo / Reprobados"
+                  value={`${report.resumen.en_riesgo} / ${report.resumen.reprobados}`}
+                />
+              </>
+            )}
           </section>
 
           <section className="overflow-hidden rounded-xl border border-border/50 bg-card/70 shadow-sm">
@@ -448,40 +521,72 @@ export function ReportesView() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[780px] text-left text-sm">
                 <thead className="bg-muted/60 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Estudiante</th>
-                    <th className="px-4 py-3 font-medium">Curso</th>
-                    <th className="px-4 py-3 text-center font-medium">Asistencias</th>
-                    <th className="px-4 py-3 text-center font-medium">Faltas</th>
-                    <th className="px-4 py-3 text-center font-medium">Atrasos</th>
-                    <th className="px-4 py-3 text-center font-medium">Porcentaje</th>
-                    <th className="px-4 py-3 text-center font-medium">Estado</th>
-                  </tr>
+                  {filters.reportCategory === 'asistencia' ? (
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Estudiante</th>
+                      <th className="px-4 py-3 font-medium">Curso</th>
+                      <th className="px-4 py-3 text-center font-medium">Asistencias</th>
+                      <th className="px-4 py-3 text-center font-medium">Faltas</th>
+                      <th className="px-4 py-3 text-center font-medium">Atrasos</th>
+                      <th className="px-4 py-3 text-center font-medium">Porcentaje</th>
+                      <th className="px-4 py-3 text-center font-medium">Estado</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Estudiante</th>
+                      <th className="px-4 py-3 font-medium">Curso</th>
+                      <th className="px-4 py-3 text-center font-medium">Promedio Parcial</th>
+                      <th className="px-4 py-3 text-center font-medium">Promedio Final</th>
+                      <th className="px-4 py-3 text-center font-medium">Estado</th>
+                    </tr>
+                  )}
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {report.estudiantes.map((student) => (
-                    <tr className="hover:bg-muted/35" key={student.id_estudiante}>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {student.nombre_estudiante}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{student.curso}</td>
-                      <td className="px-4 py-3 text-center">{student.total_asistencias}</td>
-                      <td className="px-4 py-3 text-center">{student.total_faltas}</td>
-                      <td className="px-4 py-3 text-center">{student.total_atrasos}</td>
-                      <td className="px-4 py-3 text-center font-semibold">
-                        {student.porcentaje_asistencia.toFixed(1)}%
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClasses(
-                            student.estado_academico,
-                          )}`}
-                        >
-                          {student.estado_academico}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {filters.reportCategory === 'asistencia' ? (
+                    report.estudiantes.map((student) => (
+                      <tr className="hover:bg-muted/35" key={student.id_estudiante}>
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {student.nombre_estudiante}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{student.curso}</td>
+                        <td className="px-4 py-3 text-center">{student.total_asistencias}</td>
+                        <td className="px-4 py-3 text-center">{student.total_faltas}</td>
+                        <td className="px-4 py-3 text-center">{student.total_atrasos}</td>
+                        <td className="px-4 py-3 text-center font-semibold">
+                          {student.porcentaje_asistencia.toFixed(1)}%
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClasses(
+                              student.estado_academico,
+                            )}`}
+                          >
+                            {student.estado_academico}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    report.estudiantes.map((student) => (
+                      <tr className="hover:bg-muted/35" key={student.id_estudiante}>
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {student.nombre_estudiante}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{student.curso}</td>
+                        <td className="px-4 py-3 text-center">{student.promedio_parcial.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-center font-semibold">{student.promedio_final.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClasses(
+                              student.estado,
+                            )}`}
+                          >
+                            {student.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -506,7 +611,7 @@ export function ReportesView() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No se identificaron estudiantes con dos o más faltas ni porcentajes bajos.
+                No se identificaron alertas de riesgo ni reprobados.
               </p>
             )}
           </section>

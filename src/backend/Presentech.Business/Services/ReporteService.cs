@@ -4,6 +4,8 @@ using Presentech.Business.Exceptions;
 using Presentech.Business.Interfaces;
 using Presentech.DataManagement.Interfaces;
 
+using Presentech.DataAccess.Repositories.Interfaces;
+
 namespace Presentech.Business.Services
 {
     public class ReporteService : IReporteService
@@ -11,10 +13,17 @@ namespace Presentech.Business.Services
         private const double PorcentajeExcelente = 90;
         private const double PorcentajeRegular = 75;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IActividadRepository _actividadRepository;
+        private readonly ICalificacionRepository _calificacionRepository;
 
-        public ReporteService(IUnitOfWork unitOfWork)
+        public ReporteService(
+            IUnitOfWork unitOfWork,
+            IActividadRepository actividadRepository,
+            ICalificacionRepository calificacionRepository)
         {
             _unitOfWork = unitOfWork;
+            _actividadRepository = actividadRepository;
+            _calificacionRepository = calificacionRepository;
         }
 
         public async Task<ReporteAsistenciaResponse> GenerarAsistenciaAsync(
@@ -128,6 +137,131 @@ namespace Presentech.Business.Services
                         id_estudiante = e.id_estudiante,
                         nombre_estudiante = e.nombre_estudiante,
                         mensaje = CrearMensajeAlerta(e),
+                    })
+                    .ToList(),
+            };
+        }
+
+        public async Task<ReporteCalificacionesResponse> GenerarCalificacionesAsync(
+            int idClase,
+            DateOnly fechaInicio,
+            DateOnly fechaFin,
+            int? idEstudiante,
+            int? idProfesor,
+            CancellationToken cancellationToken = default)
+        {
+            if (fechaInicio > fechaFin)
+                throw new BusinessException("La fecha de inicio no puede ser posterior a la fecha de fin.");
+
+            var clase = await _unitOfWork.ClaseRepository.GetAll()
+                .Include(c => c.Profesor)
+                .Include(c => c.Paralelo)
+                .Include(c => c.Materia)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    c => c.id_clase == idClase && c.activo,
+                    cancellationToken)
+                ?? throw new NotFoundException("Clase", idClase);
+
+            if (idProfesor.HasValue && clase.id_profesor != idProfesor.Value)
+                throw new UnauthorizedBusinessException("No tiene permisos para generar reportes de esta clase.");
+
+            var estudiantesQuery = _unitOfWork.EstudianteRepository.GetAll()
+                .Where(e => e.activo && e.ParaleloEstudiantes.Any(pe =>
+                    pe.id_paralelo == clase.id_paralelo && pe.activo));
+
+            if (idEstudiante.HasValue)
+                estudiantesQuery = estudiantesQuery.Where(e => e.id_estudiante == idEstudiante.Value);
+
+            var estudiantes = await estudiantesQuery
+                .OrderBy(e => e.apellidos)
+                .ThenBy(e => e.nombres)
+                .Select(e => new
+                {
+                    e.id_estudiante,
+                    e.nombres,
+                    e.apellidos,
+                })
+                .ToListAsync(cancellationToken);
+
+            if (idEstudiante.HasValue && estudiantes.Count == 0)
+                throw new BusinessException("El estudiante seleccionado no pertenece al curso indicado.");
+
+            var estudiantesIds = estudiantes.Select(e => e.id_estudiante).ToList();
+
+            var actividades = await _actividadRepository.GetByClaseIdAsync(idClase);
+            
+            var fechaInicioDateTime = fechaInicio.ToDateTime(TimeOnly.MinValue);
+            var fechaFinDateTime = fechaFin.ToDateTime(TimeOnly.MaxValue);
+
+            actividades = actividades.Where(a => a.fecha >= fechaInicioDateTime && a.fecha <= fechaFinDateTime).ToList();
+            var actividadesIds = actividades.Select(a => a.id_actividad).ToList();
+
+            var calificaciones = await _calificacionRepository.GetByClaseIdAsync(idClase);
+            calificaciones = calificaciones.Where(c => actividadesIds.Contains(c.id_actividad)).ToList();
+
+            var curso = $"{clase.Materia.Nombre} de {clase.Paralelo.nombre}";
+            var filas = estudiantes.Select(estudiante =>
+            {
+                decimal sumaNotasPonderadas = 0;
+                decimal sumaPesosRegistrados = 0;
+
+                foreach (var actividad in actividades)
+                {
+                    var calificacion = calificaciones.FirstOrDefault(c => c.id_actividad == actividad.id_actividad && c.id_estudiante == estudiante.id_estudiante);
+                    if (calificacion != null)
+                    {
+                        sumaNotasPonderadas += calificacion.nota * actividad.peso;
+                        sumaPesosRegistrados += actividad.peso;
+                    }
+                }
+
+                double promedioParcial = 0;
+                if (sumaPesosRegistrados > 0)
+                {
+                    promedioParcial = Math.Round((double)(sumaNotasPonderadas / sumaPesosRegistrados), 2);
+                }
+
+                // Asumimos Promedio Final igual al Parcial por ahora, o podría haber una lógica extra.
+                double promedioFinal = promedioParcial;
+                string estado = promedioFinal >= 7.0 ? "Aprobado" : (promedioFinal >= 5.0 ? "Riesgo" : "Reprobado");
+
+                return new ReporteCalificacionEstudianteResponse
+                {
+                    id_estudiante = estudiante.id_estudiante,
+                    nombre_estudiante = $"{estudiante.apellidos}, {estudiante.nombres}",
+                    curso = curso,
+                    promedio_parcial = promedioParcial,
+                    promedio_final = promedioFinal,
+                    estado = estado
+                };
+            }).ToList();
+
+            double promedioCurso = filas.Count == 0 ? 0 : Math.Round(filas.Average(e => e.promedio_final), 2);
+
+            return new ReporteCalificacionesResponse
+            {
+                id_clase = clase.id_clase,
+                curso = curso,
+                docente = $"{clase.Profesor.nombres} {clase.Profesor.apellidos}",
+                fecha_inicio = fechaInicio,
+                fecha_fin = fechaFin,
+                estudiantes = filas,
+                resumen = new ReporteCalificacionResumenResponse
+                {
+                    total_estudiantes = filas.Count,
+                    promedio_curso = promedioCurso,
+                    aprobados = filas.Count(e => e.estado == "Aprobado"),
+                    en_riesgo = filas.Count(e => e.estado == "Riesgo"),
+                    reprobados = filas.Count(e => e.estado == "Reprobado")
+                },
+                alertas = filas
+                    .Where(e => e.estado != "Aprobado")
+                    .Select(e => new ReporteAlertaResponse
+                    {
+                        id_estudiante = e.id_estudiante,
+                        nombre_estudiante = e.nombre_estudiante,
+                        mensaje = $"Promedio bajo: {e.promedio_final:0.##}. Estado: {e.estado}."
                     })
                     .ToList(),
             };

@@ -11,5 +11,13 @@ namespace Presentech.Business.Interfaces
             int? idEstudiante,
             int? idProfesor,
             CancellationToken cancellationToken = default);
+
+        Task<ReporteCalificacionesResponse> GenerarCalificacionesAsync(
+            int idClase,
+            DateOnly fechaInicio,
+            DateOnly fechaFin,
+            int? idEstudiante,
+            int? idProfesor,
+            CancellationToken cancellationToken = default);
     }
 }
