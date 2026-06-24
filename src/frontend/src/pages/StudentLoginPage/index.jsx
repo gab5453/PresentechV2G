@@ -96,7 +96,7 @@ export function StudentLoginPage() {
           </div>
           
           <div className="mt-6 text-center">
-            <Link to="/login" className="text-sm font-medium text-primary hover:underline">
+            <Link to="/login" className="text-sm font-medium text-primary-800 hover:text-primary-700">
               ¿Eres docente? Inicia sesión aquí
             </Link>
           </div>

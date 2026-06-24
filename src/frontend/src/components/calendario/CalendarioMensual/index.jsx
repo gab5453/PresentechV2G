@@ -69,22 +69,22 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
   const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border bg-muted/10 p-4">
+    <div className="rounded-xl border border-gray-300 bg-card shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between border-b border-gray-300 bg-muted/10 p-4">
         <h2 className="text-xl font-semibold capitalize text-foreground tracking-tight">
           {format(currentDate, "MMMM 'de' yyyy", { locale: es })}
         </h2>
         <div className="flex gap-2">
           <button
             onClick={handlePrevMonth}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-muted text-muted-foreground transition-colors shadow-sm"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-card hover:bg-muted text-muted-foreground transition-colors shadow-sm"
             type="button"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             onClick={handleNextMonth}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-muted text-muted-foreground transition-colors shadow-sm"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-card hover:bg-muted text-muted-foreground transition-colors shadow-sm"
             type="button"
           >
             <ChevronRight className="h-5 w-5" />
@@ -92,7 +92,7 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+      <div className="grid grid-cols-7 border-b border-gray-300 bg-muted/30">
         {weekDays.map((day) => (
           <div key={day} className="p-3 text-center text-sm font-semibold text-muted-foreground">
             {day}
@@ -113,17 +113,17 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
           return (
             <div
               key={day.toISOString()}
-              className={`min-h-[140px] border-b border-r border-border p-2 transition-colors ${
+              className={`min-h-[140px] border-b border-r border-gray-300 p-2 transition-colors ${
                 !isCurrentMonth ? 'bg-muted/30 opacity-60' : 'bg-card'
               } ${idx % 7 === 6 ? 'border-r-0' : ''}`}
             >
               <div className="mb-3 flex justify-end">
                 <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                  className={
                     isToday
-                      ? 'bg-primary text-primary-foreground shadow-md ring-4 ring-primary/20'
-                      : 'text-foreground hover:bg-muted'
-                  }`}
+                      ? 'bg-primary-600 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full'
+                      : 'text-gray-900 font-medium hover:bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm'
+                  }
                 >
                   {format(day, 'd')}
                 </span>
@@ -135,10 +135,10 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
                     <button
                       key={horario.id_horario}
                       onClick={() => onTomarAsistencia(horario.id_horario, isoDate)}
-                      className={`flex w-full flex-col items-start rounded-lg border p-2 text-left text-xs transition-all hover:-translate-y-0.5 hover:shadow-sm ${
+                      className={`flex w-full flex-col items-start rounded-lg p-2 text-left text-xs transition-all hover:-translate-y-0.5 hover:shadow-sm ${
                         isRegistered
-                          ? 'border-success/30 bg-success/10 text-success hover:border-success/50'
-                          : 'border-warning/30 bg-warning/10 text-warning-foreground hover:border-warning/50'
+                          ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200'
+                          : 'bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-300'
                       }`}
                     >
                       <span className="font-semibold text-[13px]">
