@@ -83,8 +83,8 @@ function getQuarterDates(quarter) {
 }
 
 function getStatusClasses(status) {
-  if (status === 'Excelente') return 'bg-success-bg text-success'
-  if (status === 'Regular') return 'bg-warning-bg text-warning'
+  if (status === 'Excelente' || status === 'Aprobado') return 'bg-success-bg text-success'
+  if (status === 'Regular' || status === 'Riesgo') return 'bg-warning-bg text-warning'
   return 'bg-error-bg text-error'
 }
 
@@ -573,8 +573,12 @@ export function ReportesView() {
                           {student.nombre_estudiante}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{student.curso}</td>
-                        <td className="px-4 py-3 text-center">{student.promedio_parcial.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-center font-semibold">{student.promedio_final.toFixed(2)}</td>
+                        <td className={`px-4 py-3 text-center ${student.promedio_parcial >= 7.5 ? 'text-success font-semibold' : ''}`}>
+                          {student.promedio_parcial.toFixed(2)}
+                        </td>
+                        <td className={`px-4 py-3 text-center font-semibold ${student.promedio_final >= 7.5 ? 'text-success' : ''}`}>
+                          {student.promedio_final.toFixed(2)}
+                        </td>
                         <td className="px-4 py-3 text-center">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClasses(

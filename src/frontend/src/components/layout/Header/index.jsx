@@ -25,7 +25,7 @@ export function Header({ title, user, onLogout }) {
                 PresenTech
               </p>
               <p className="hidden text-xs text-muted-foreground lg:block">
-                Unidad Educativa Fe y Alegría La Dolorosa
+                Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa
               </p>
             </div>
           </div>

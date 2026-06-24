@@ -1,7 +1,7 @@
 export const institutionConfig = {
   name:
     import.meta.env.VITE_INSTITUTION_NAME ||
-    'Unidad Educativa Fe y Alegría La Dolorosa',
+    'Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa',
   city: import.meta.env.VITE_INSTITUTION_CITY || '',
   address: 'Av. García Moreno S3-411 y Fe y Alegría',
   phone: '(02) 2012 130',

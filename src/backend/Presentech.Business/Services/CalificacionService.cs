@@ -183,7 +183,7 @@ namespace Presentech.Business.Services
                     else
                         estudianteDto.Promedio = 0;
 
-                    estudianteDto.RequiereAlarma = estudianteDto.Promedio < 7.0m;
+                    estudianteDto.RequiereAlarma = estudianteDto.Promedio < 7.5m;
                 }
                 else
                 {

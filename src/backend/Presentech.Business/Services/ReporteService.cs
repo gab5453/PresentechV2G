@@ -213,7 +213,7 @@ namespace Presentech.Business.Services
 
                 // Asumimos Promedio Final igual al Parcial por ahora, o podría haber una lógica extra.
                 double promedioFinal = promedioParcial;
-                string estado = promedioFinal >= 7.0 ? "Aprobado" : (promedioFinal >= 5.0 ? "Riesgo" : "Reprobado");
+                string estado = promedioFinal >= 8.0 ? "Aprobado" : (promedioFinal >= 7.5 ? "Riesgo" : "Reprobado");
 
                 return new ReporteCalificacionEstudianteResponse
                 {

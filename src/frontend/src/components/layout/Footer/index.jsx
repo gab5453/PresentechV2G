@@ -97,7 +97,7 @@ export function Footer({ withMobileNavSpacing = false }) {
       </div>
 
       <div className="border-t border-border/60 bg-primary-dark px-4 py-3 text-center text-xs text-white/80">
-        © {new Date().getFullYear()} PresentTech · Unidad Educativa Fe y Alegría La Dolorosa
+        © {new Date().getFullYear()} PresentTech · Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa
       </div>
     </footer>
   )
