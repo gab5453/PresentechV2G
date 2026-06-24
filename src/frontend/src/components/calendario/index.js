@@ -1,1 +1,1 @@
-export { CalendarioSemanal } from './CalendarioSemanal'
+export { CalendarioMensual } from './CalendarioMensual'

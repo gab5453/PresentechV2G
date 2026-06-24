@@ -114,7 +114,7 @@ export function AdminLoginPage() {
         <div className="mt-10 flex flex-col items-center gap-4 z-30">
           <Link
             to="/login"
-            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
           >
             ¿Eres docente? Vuelve al inicio de sesión principal
           </Link>
