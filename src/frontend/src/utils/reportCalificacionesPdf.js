@@ -51,7 +51,7 @@ function drawHeader(doc, logoData, generatedAt) {
   doc.setTextColor(...DARK_TEXT)
   doc.text(institutionConfig.name.toUpperCase(), pageWidth / 2, 18, {
     align: 'center',
-    maxWidth: 92,
+    maxWidth: 150,
   })
 
   doc.setFont('helvetica', 'normal')

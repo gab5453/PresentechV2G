@@ -263,7 +263,7 @@ function AcademicRiskPanel({ alertas }) {
           </span>
           <div>
             <h3 className="font-semibold text-foreground">Rendimiento académico</h3>
-            <p className="text-sm text-muted-foreground">Estudiantes con promedio menor a 7.0.</p>
+            <p className="text-sm text-muted-foreground">Estudiantes con promedio menor a 7.5.</p>
           </div>
         </div>
         <span className="rounded-full bg-error/10 px-3 py-1 text-xs font-semibold text-error">
