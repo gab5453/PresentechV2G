@@ -12,7 +12,7 @@ import {
   endOfWeek
 } from 'date-fns'
 import { es } from 'date-fns/locale/es'
-import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle, Clock } from 'lucide-react'
 import { toIsoDate } from '../../../utils/dateUtils'
 import { formatTime } from '../../../utils/claseUtils'
 import { obtenerRegistroAsistencia } from '../../../services/asistenciasService'
@@ -49,7 +49,7 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
         horariosDelDia.forEach(horario => {
           checks.push(
             obtenerRegistroAsistencia(horario.id_horario, toIsoDate(day))
-              .then(() => `${horario.id_horario}_${toIsoDate(day)}`)
+              .then((res) => res.data ? `${horario.id_horario}_${toIsoDate(day)}` : null)
               .catch(() => null)
           )
         })
@@ -138,7 +138,7 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
                       className={`flex w-full flex-col items-start rounded-lg border p-2 text-left text-xs transition-all hover:-translate-y-0.5 hover:shadow-sm ${
                         isRegistered
                           ? 'border-success/30 bg-success/10 text-success hover:border-success/50'
-                          : 'border-border bg-background text-foreground hover:border-primary/40 hover:bg-primary/5'
+                          : 'border-warning/30 bg-warning/10 text-warning-foreground hover:border-warning/50'
                       }`}
                     >
                       <span className="font-semibold text-[13px]">
@@ -146,7 +146,7 @@ export function CalendarioMensual({ clase, onTomarAsistencia }) {
                       </span>
                       <span className="mt-1 flex w-full items-center justify-between font-medium opacity-90">
                         {isRegistered ? 'Lista' : 'Pendiente'}
-                        {isRegistered && <CheckCircle className="h-3.5 w-3.5" />}
+                        {isRegistered ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                       </span>
                     </button>
                   )

@@ -110,18 +110,18 @@ export function AdminLoginPage() {
               {isSubmitting ? 'Ingresando...' : 'Ingresar'}
             </Button>
           </div>
+          <div className="mt-6 flex flex-col space-y-3 text-center">
+            <Link
+              to="/login"
+              className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              ¿Eres docente? Vuelve al inicio de sesión principal
+            </Link>
+          </div>
         </form>
-        <div className="mt-10 flex flex-col items-center gap-4 z-30">
-          <Link
-            to="/login"
-            className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            ¿Eres docente? Vuelve al inicio de sesión principal
-          </Link>
-          <p className="text-sm text-muted-foreground font-medium">
-            Fe y Alegría &middot; Innovación Educativa
-          </p>
-        </div>
+        <p className="mt-10 text-center text-sm text-muted-foreground font-medium z-30">
+          Fe y Alegría &middot; Innovación Educativa
+        </p>
       </section>
     </main>
     <Footer />

@@ -203,18 +203,25 @@ namespace Presentech.Business.Services
             var curso = $"{clase.Materia.Nombre} de {clase.Paralelo.nombre}";
             var filas = estudiantes.Select(estudiante =>
             {
-                decimal promedioPonderado = 0;
+                decimal sumaNotasPonderadas = 0;
+                decimal sumaPesosRegistrados = 0;
 
                 foreach (var actividad in actividades)
                 {
                     var calificacion = calificaciones.FirstOrDefault(c => c.id_actividad == actividad.id_actividad && c.id_estudiante == estudiante.id_estudiante);
                     if (calificacion != null)
                     {
-                        promedioPonderado += calificacion.nota * (actividad.peso / 100m);
+                        sumaNotasPonderadas += calificacion.nota * actividad.peso;
+                        sumaPesosRegistrados += actividad.peso;
                     }
                 }
 
-                double promedioParcial = Math.Round((double)promedioPonderado, 2);
+                double promedioParcial = 0;
+                if (actividades.Count > 0)
+                {
+                    if (sumaPesosRegistrados > 0)
+                        promedioParcial = Math.Round((double)(sumaNotasPonderadas / sumaPesosRegistrados), 2);
+                }
 
                 // Asumimos Promedio Final igual al Parcial por ahora, o podría haber una lógica extra.
                 double promedioFinal = promedioParcial;

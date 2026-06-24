@@ -113,7 +113,7 @@ export function LoginPage() {
               <Link to="/estudiante/login" className="text-sm font-medium text-primary hover:underline">
                 ¿Eres estudiante? Inicia sesión aquí
               </Link>
-              <Link to="/admin/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/admin/login" className="text-sm font-medium text-primary hover:underline">
                 Acceso Administrativo
               </Link>
             </div>
