@@ -16,13 +16,13 @@ export function Header({ title, user, onLogout }) {
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex shrink-0 items-center gap-3">
             <img
-              alt="Logo PresenTech"
+              alt="Logo PresenTechV2G"
               className="h-9 w-9 rounded-lg object-cover shadow-md"
               src="/logo_presentech_icon.png"
             />
             <div className="hidden min-w-0 sm:block">
               <p className="font-semibold leading-tight tracking-tight text-foreground">
-                PresenTech
+                PresenTechV2G
               </p>
               <p className="hidden text-xs text-muted-foreground lg:block">
                 Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa

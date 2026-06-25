@@ -47,11 +47,11 @@ export function StudentLoginPage() {
       <section className="relative z-10 w-full max-w-md px-4 py-8 animate-fade-in animate-slide-up flex flex-col items-center">
         <div className="mb-8 flex flex-col items-center">
           <img
-            alt="Logo PresenTech"
+            alt="Logo PresenTechV2G"
             className="mb-6 h-20 w-20 rounded-2xl object-cover shadow-xl"
             src="/logo_presentech_icon.png"
           />
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">PresenTech</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">PresenTechV2G</h1>
           <p className="mt-2 text-center text-base text-muted-foreground">
             Portal de Estudiantes
           </p>

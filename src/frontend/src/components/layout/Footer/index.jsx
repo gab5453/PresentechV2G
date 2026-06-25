@@ -44,7 +44,7 @@ export function Footer({ withMobileNavSpacing = false }) {
           />
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-              PresenTech
+              PresenTechV2G
             </p>
             <h2 className="mt-1 text-base font-semibold leading-snug text-foreground">
               {institutionConfig.name}
@@ -97,7 +97,7 @@ export function Footer({ withMobileNavSpacing = false }) {
       </div>
 
       <div className="border-t border-border/60 bg-primary-dark px-4 py-3 text-center text-xs text-white/80">
-        © {new Date().getFullYear()} PresentTech · Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa
+        © {new Date().getFullYear()} PresenTechV2G · Unidad Educativa Fiscomisional Fe y Alegría La Dolorosa
       </div>
     </footer>
   )
